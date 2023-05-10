@@ -1,0 +1,203 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "PlaybookName": {
+        "type": "string",
+        "defaultValue": "MSDX-Enrichment-Network",
+        "metadata": {
+          "description": "Name of the Logic App."
+        }
+      },
+      "ADXDatabaseName":{
+        "defaultValue": "adxdata001",
+        "type": "string",
+        "metadata": {
+            "description": "Your ADX Database Name"
+          }
+    }
+    },
+    "variables": {
+        "AzureSentinelConnectionName": "[concat('azuresentinel-', parameters('PlaybookName'))]",
+        "ADXConnectionName": "[concat('azuredataexplorer-', parameters('PlaybookName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('ADXConnectionName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "V1",
+            "properties": {
+                "displayName": "[variables('ADXConnectionName')]",
+                "customParameterValues": {},
+                "parameterValueType": "Alternative",
+                "api": {
+                    "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/kusto')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('AzureSentinelConnectionName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "V1",
+            "properties": {
+                "displayName": "[variables('AzureSentinelConnectionName')]",
+                "customParameterValues": {},
+                "parameterValueType": "Alternative",
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azuresentinel')]"
+                }
+            }
+        },
+      {
+        "type": "Microsoft.Logic/workflows",
+        "apiVersion": "2019-05-01",
+        "name": "[parameters('PlaybookName')]",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
+          "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]"
+        ],
+        "properties": {
+          "definition": {
+            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+              }
+            },
+            "triggers": {
+              "Microsoft_Sentinel_incident": {
+                "type": "ApiConnectionWebhook",
+                "inputs": {
+                  "body": {
+                    "callback_url": "@{listCallbackUrl()}"
+                  },
+                  "host": {
+                    "connection": {
+                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                    }
+                  },
+                  "path": "/incident-creation"
+                }
+              }
+            },
+            "actions": {
+              "Entities_-_Get_IPs": {
+                "runAfter": {},
+                "type": "ApiConnection",
+                "inputs": {
+                  "body": "@triggerBody()?['object']?['properties']?['relatedEntities']",
+                  "host": {
+                    "connection": {
+                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                    }
+                  },
+                  "method": "post",
+                  "path": "/entities/ip"
+                }
+              },
+              "For_each": {
+                "foreach": "@body('Entities_-_Get_IPs')?['IPs']",
+                "actions": {
+                  "Create_HTML_table": {
+                    "runAfter": {
+                        "Run_KQL_query": [
+                        "Succeeded"
+                    ]},
+                    "type": "Table",
+                    "inputs": {
+                      "format": "HTML",
+                      "from": "@body('Run_KQL_query')?['value']"
+                    }
+                  },
+                  "Network_IOC_Communications": {
+                    "runAfter": {
+                        "Create_HTML_table": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "body": {
+                        "incidentArmId": "@triggerBody()?['object']?['id']",
+                        "message": "<p>Related Events in Past 6 hours:<br>\n@{body('Create_HTML_table')}<br>\n</p>"
+                      },
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "path": "/Incidents/Comment"
+                    }
+                  },
+                  "Run_KQL_query": {
+                    "runAfter": {},
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "body": {
+                        "cluster": "[parameters('ADXClusterURI')]",
+                        "csl": "external_table('paloaltotraffic')\n| where rt >= ago(6h) and rt < now()\n| search \"@{items('For_each')?['Address']}\"\n| summarize sum(total_in), sum(total_out), events= count() by src, dst, DestinationPort, SourcePort, ApplicationProtocol, SimplifiedDeviceAction",
+                        "db": "[parameters('ADXDataBase')]"
+                      },
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['kusto']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "path": "/ListKustoResults/false"
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Entities_-_Get_IPs": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "Foreach"
+              }
+            },
+            "outputs": {}
+          },
+          "parameters": {
+            "$connections": {
+              "value": {
+                "azuresentinel": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/azuresentinel')]",
+                  "connectionId": "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
+                  "connectionName": "[variables('AzureSentinelConnectionName')]",
+                  "connectionProperties": {
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  }
+                },
+                "kusto": {
+                    "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/kusto')]",
+                      "connectionId": "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]",
+                    "connectionName": "[variables('ADXConnectionName')]",
+                    "connectionProperties": {
+                      "authentication": {
+                        "type": "ManagedServiceIdentity"
+                      }
+                    }
+                  }
+              }
+            }
+          }
+        },
+        "identity": {
+          "type": "SystemAssigned"
+        }
+      }
+      
+    ],
+    "outputs": {}
+  }

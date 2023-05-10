@@ -1,0 +1,137 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+       "NetworkSummaryPlaybookName": {
+          "defaultValue": "MSDX-Summarize-Network",
+          "type": "string"
+        },
+      "NetworkEnrichmentPlaybookName": {
+       "defaultValue": "MSDX-Enrich-Network",
+       "type": "string"
+        },
+       "DeployConnector": {
+            "defaultValue": true,
+            "type": "bool"
+        },
+        "CustomConnectorName": {
+            "defaultValue": "MSDX",
+            "type": "string"
+        },
+        "CustomConnectorDisplayName": {
+            "defaultValue": "Microsoft Security Data eXchange - MSDX",
+            "type": "string"
+        },
+        "ADXUri": {
+            "defaultValue": "https://<YOURADXURI>.centralus.kusto.windows.net/",
+            "type": "string",
+            "metadata": {
+                "description": "Your ADX Cluster URI"
+              }
+        },
+        "ADXDataBase": {
+            "defaultValue": "adxdata001",
+            "type": "string",
+            "metadata": {
+                "description": "Your ADX Database Name"
+              }
+        },
+        "DeploymentBranch": {
+            "defaultValue": "main",
+            "type": "string"
+        },
+        "SentinelWorkspaceID": {
+             "type": "string",
+             "metadata": {
+             "description": "The workspace ID of your Sentinel"
+              }
+        },
+        "SentinelWorkspaceKey": {
+         "type": "securestring",
+         "metadata": {
+         "description": "The workspace key of your Sentinel workspace"
+              }
+        }
+     },
+    "variables": {
+        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Summarization/NetworktoSentinel/azuredeploy.json')]",
+        "NetworkEnrichmentTemplae": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Enrichment/NetworkEnrichment/azuredeploy.json')]",
+        "ConnectorTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Connector/azuredeploy.json')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-10-01",
+            "name": "NetworkSummariesTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('NetworkSummariesTemplate')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "PlaybookName": {
+                        "value": "[parameters('NetworkSummaryPlaybookName')]"
+                    },
+                    "ADLSUri": {
+                        "value": "[parameters('ADXUri')]"
+                    },
+                    "WorkspaceID":{
+                        "value": "[parameters('SentinelWorkspaceID')]"
+                    },
+                    "WorkspaceKey":{
+                     "value": "[parameters('SentinelWorkspaceKey')]"
+                    }
+            }
+        }
+     },
+        {
+            "apiVersion": "2019-10-01",
+            "name": "NetworkEnrichmentTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('NetworkEnrichmentTemplate')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "PlaybookName": {
+                        "value": "[parameters('NetworkEnrichmentPlaybookName')]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[parameters('DeployConnector')]",
+            "apiVersion": "2019-10-01",
+            "name": "DeployConnector",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'NetworkSummariesTemplate')]",
+                "[resourceId('Microsoft.Resources/deployments', 'NetworkEnrichmentTemplate')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('ConnectorTemplate')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                     "CustomConnectorName": {
+                        "value": "[parameters('CustomConnectorName')]"
+                    },
+                    "CustomConnectorDisplayName": {
+                        "value": "[parameters('CustomConnectorDisplayName')]"
+                    },
+                    "NetworkSummariesPlaybook_resourceid": {
+                        "value": "[reference('NetworkSummariesTemplate').outputs.resourceID.value]"
+                    },
+                    "NetworkEnrichmentTemplatePlaybook_resourceid": {
+                        "value": "[reference('NetworkEnrichmentTemplate').outputs.resourceID.value]"
+                    }
+                 }
+            }
+        }
+    ]
+ }

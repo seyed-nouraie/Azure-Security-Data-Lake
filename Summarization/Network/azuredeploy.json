@@ -15,12 +15,6 @@
           "description": "The unique identifier of the Azure Log Analytics workspace."
         }
       },
-      "SentinelWorkspaceName": {
-        "type": "string",
-        "metadata": {
-          "description": "The name of your Sentinel Log Analytics workspace."
-        }
-      },
       "SentinelWorkspaceKey": {
         "type": "securestring",
         "metadata": {

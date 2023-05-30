@@ -2,499 +2,125 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "PlaybookName": {
-        "type": "string",
-        "defaultValue": "MSDX-Summarize-Network",
-        "metadata": {
-          "description": "Name of the Logic App."
-        }
-      },
-      "SentinelWorkspaceID": {
+      "WorkspaceName": {
         "type": "string",
         "metadata": {
-          "description": "The unique identifier of the Azure Log Analytics workspace."
-        }
-      },
-      "SentinelWorkspaceKey": {
-        "type": "securestring",
-        "metadata": {
-          "description": "The primary or secondary key of the Azure Log Analytics workspace."
-        }
-      },
-      "ADXClusterURI":{
-        "type":"string",
-        "metadata":{
-          "description": "URL of the ADX Cluster"
-        }
-      },
-      "ADXDatabaseName":{
-        "defaultValue": "adxdata001",
-        "type": "string",
-        "metadata": {
-            "description": "Your ADX Database Name"
-          }
-    }
-    },
-    "variables": {
-        "AzureSentinelConnectionName": "[concat('azuresentinel-', parameters('PlaybookName'))]",
-        "ADXConnectionName": "[concat('azuredataexplorer-', parameters('PlaybookName'))]"
-    },
-    "resources": [
-          {
-            "type": "Microsoft.Web/connections",
-            "apiVersion": "2016-06-01",
-            "name": "[variables('AzureSentinelConnectionName')]",
-            "location": "[resourceGroup().location]",
-            "kind": "V1",
-            "properties": {
-                "displayName": "[variables('AzureSentinelConnectionName')]",
-                "parameterValues": {
-                    "username": "[parameters('SentinelWorkspaceID')]",
-                    "password": "[parameters('SentinelWorkspaceKey')]"
-                },
-                "api": {
-                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureloganalyticsdatacollector')]"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Web/connections",
-            "apiVersion": "2016-06-01",
-            "name": "[variables('ADXConnectionName')]",
-            "location": "[resourceGroup().location]",
-            "kind": "V1",
-            "properties": {
-                "displayName": "[variables('ADXConnectionName')]",
-                "customParameterValues": {},
-                "parameterValueType": "Alternative",
-                "api": {
-                    "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/kusto')]"
-                }
-            }
-        },
-      {
-        "type": "Microsoft.Logic/workflows",
-        "apiVersion": "2019-05-01",
-        "name": "[parameters('PlaybookName')]",
-        "location": "[resourceGroup().location]",
-        "dependsOn": [
-          "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
-          "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]"
-        ],
-        "properties": {
-          "definition": {
-            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-              "$connections": {
-                "defaultValue": {},
-                "type": "Object"
-              }
-            },
-            "triggers": {
-              "Recurrence": {
-                "recurrence": {
-                  "frequency": "Hour",
-                  "interval": 1
-                },
-                "type": "Recurrence"
-              }
-            },
-            "actions": {
-                "Delay": {
-                    "inputs": {
-                        "interval": {
-                            "count": 30,
-                            "unit": "Second"
-                        }
-                    },
-                    "runAfter": {},
-                    "type": "Wait"
-                },
-                "Delay_2": {
-                    "inputs": {
-                        "interval": {
-                            "count": 10,
-                            "unit": "Second"
-                        }
-                    },
-                    "runAfter": {},
-                    "type": "Wait"
-                },
-                "Delay_3": {
-                    "inputs": {
-                        "interval": {
-                            "count": 20,
-                            "unit": "Second"
-                        }
-                    },
-                    "runAfter": {},
-                    "type": "Wait"
-                },
-                "Delay_4": {
-                    "inputs": {
-                        "interval": {
-                            "count": 40,
-                            "unit": "Second"
-                        }
-                    },
-                    "runAfter": {},
-                    "type": "Wait"
-                },
-                "Delay_5": {
-                    "inputs": {
-                        "interval": {
-                            "count": 50,
-                            "unit": "Second"
-                        }
-                    },
-                    "runAfter": {},
-                    "type": "Wait"
-                },
-                "Delay_6": {
-                    "inputs": {
-                        "interval": {
-                            "count": 60,
-                            "unit": "Second"
-                        }
-                    },
-                    "runAfter": {},
-                    "type": "Wait"
-                },
-                "Send_Data": {
-                  "runAfter": {
-                  "Summary_-_Outbound_Firewall_Traffic": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_Outbound_Firewall_Traffic')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesNetworkOutbound_CL",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Send_Data_2": {
-                "runAfter": {
-                  "Summary_-_Inbound_Firewall_Traffic": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_Inbound_Firewall_Traffic')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesNetworkInbound_CL",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Send_Data_3": {
-                "runAfter": {
-                  "Summary_-_Original_Palo_Table_Size_Estimate": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_Original_Palo_Table_Size_Estimate')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesOriginalTableSizeEstimates",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Send_Data_4": {
-                "runAfter": {
-                  "Summary_-_DeviceProcessEvents": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_DeviceProcessEvents')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesDeviceProcessEvents_CL",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Send_Data_5": {
-                "runAfter": {
-                  "Summary_-_Estimate_DeviceProcessEvents_Size": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_Estimate_DeviceProcessEvents_Size')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesOriginalTableSizeEstimates",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Send_Data_6": {
-                "runAfter": {
-                  "Summary_-_DeviceNetworkEvents": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_DeviceNetworkEvents')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesDeviceNetworkEvents_CL",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Send_Data_7": {
-                "runAfter": {
-                  "Summary_-_Estimate_DeviceNetworkEvents_Size": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@{body('Summary_-_Estimate_DeviceNetworkEvents_Size')?['value']}",
-                  "headers": {
-                    "Log-Type": "SummariesOriginalTableSizeEstimates",
-                    "time-generated-field": "endtime"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/api/logs"
-                }
-              },
-              "Summary_-_DeviceNetworkEvents": {
-                "runAfter": {
-                  "Delay_2": [
-                    "Succeeded"
-                ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nexternal_table('DeviceNetworkEvents')\n| where ['time'] >= starttime and ['time'] < endtime and isnotempty(tostring(properties.RemoteIP))\n| summarize TotalSeen = count() , Users=make_set(properties.InitiatingProcessAccountName), DevicesSeen = count_distinct(tostring(properties.DeviceId)),  URLs = make_set_if(tostring(properties.RemoteUrl), isnotempty(tostring(properties.RemoteUrl))), Processes_SHA1 = make_set_if(tostring(properties.InitiatingProcessSHA1), isnotempty(tostring(properties.InitiatingProcessSHA1))),  Actions = make_set(tostring(properties.ActionType)) by RemoteIP = tostring(properties.RemoteIP) \n| extend endtime= endtime",
-                    "db": "[parameters('ADXDataBaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              },
-              "Summary_-_DeviceProcessEvents": {
-                "runAfter": {
-                  "Delay_3": [
-                    "Succeeded"
-                ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nlet processes = external_table('DeviceProcessEvents')\n| where ['time'] >= starttime and ['time'] < endtime and isnotempty(properties.SHA1)\n| summarize TotalSeen=count(), Users=make_set_if(tostring(properties.AccountName),isnotempty(tostring(properties.AccountName))), DevicesSeen=count_distinct(tostring(properties.DeviceId)) by FileName = tostring(properties.FileName), FileSize = tostring(properties.FileSize), SHA1 = tostring(properties.SHA1)\n| extend type = \"Process\";\nexternal_table('DeviceProcessEvents')\n| where ['time'] >= starttime and ['time'] <= starttime and isempty(properties.FileName)\n| where isnotempty(tostring(properties.InitiatingProcessSHA1))\n| summarize DevicesSeen=count_distinct(tostring(properties.DeviceId)), Users=make_set_if(tostring(properties.AccountName),isnotempty(tostring(properties.AccountName))), TotalSeen=count() by SHA1 = tostring(properties.InitiatingProcessSHA1), FileSize = tostring(properties.InitiatingProcessFileSize), FileName = tostring(properties.InitiatingProcessFileName)\n| extend type = \"InitatingProcess\"\n| union processes\n| extend endtime= endtime",
-                    "db": "[parameters('ADXDataBaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              },
-              "Summary_-_Estimate_DeviceNetworkEvents_Size": {
-                "runAfter": {
-                  "Delay": [
-                    "Succeeded"
-                ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nexternal_table('DeviceNetworkEvents')\n| where ['time'] >= starttime and ['time'] < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1\n| extend table = \"DeviceNetworkEvents\"",
-                    "db": "[parameters('ADXDataBaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              },
-              "Summary_-_Estimate_DeviceProcessEvents_Size": {
-                "runAfter": {
-                  "Delay_4": [
-                    "Succeeded"
-                ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nexternal_table('DeviceProcessEvents')\n| where ['time'] >= starttime and ['time'] < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1\n| extend table = \"DeviceProcessEvents\"",
-                    "db": "[parameters('ADXDataBaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              },
-              "Summary_-_Inbound_Firewall_Traffic": {
-                "runAfter": {
-                  "Delay_5": [
-                    "Succeeded"
-                ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nlet checkpoint = union isfuzzy=true  external_table('checkpoint'), (print null=0)\n| where rt >= starttime and rt < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(src),\n    RemotePortsCount=count_distinct(spt),\n    LocalPortsCount=count_distinct(dpt),\n    OutBytes = 0,\n    InBytes = 0    by dst, SimplifiedDeviceAction=act\n| extend direction=\"Out\", endtime=endtime\n| project-rename IP=dst;\n union isfuzzy=true external_table('paloaltotraffic'), (print null=0)\n| where rt >= starttime and rt < endtime\n| summarize ConnectionsCount=count(), \n    RemoteIPCount = count_distinct(src),\n    RemotePortsCount=count_distinct(SourcePort),\n    LocalPortsCount=count_distinct(DestinationPort),\n    OutBytes = sum(total_in),\n    InBytes = sum(total_out) by dst, SimplifiedDeviceAction\n| extend direction=\"In\", endtime=endtime\n| project-rename IP=dst\n| union isfuzzy=true checkpoint",
-                    "db": "[parameters('ADXDataBaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              },
-              "Summary_-_Original_Palo_Table_Size_Estimate": {
-                "runAfter": {
-                  "Delay_6": [
-                    "Succeeded"
-                ]  
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nunion isfuzzy=true external_table('paloaltotraffic'), external_table('checkpoint')| where rt >= starttime and rt < endtime\n| take 1000000000000000000\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1\n| extend table = \"Firewall Traffic\"",
-                    "db": "[parameters('ADXDataBaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              },
-              "Summary_-_Outbound_Firewall_Traffic": {
-                "runAfter": {
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": {
-                    "cluster": "[parameters('ADXClusterURI')]",
-                    "csl": "let starttime = bin(ago(1h), 1h);\nlet endtime = bin(now(), 1h);\nlet checkpoint =  union isfuzzy=true external_table('checkpoint'), (print null=0)\n| where rt >= starttime and rt < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(dst),\n    RemotePortsCount=count_distinct(dpt),\n    LocalPortsCount=count_distinct(spt),\n    OutBytes = 0,\n    InBytes = 0    by src, SimplifiedDeviceAction=act\n| extend direction=\"Out\", endtime=endtime\n| project-rename IP=src;\n union isfuzzy=true external_table('paloaltotraffic'), (print null=0)\n| where rt >= starttime and rt < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(dst),\n    RemotePortsCount=count_distinct(DestinationPort),\n    LocalPortsCount=count_distinct(SourcePort),\n    OutBytes = sum(total_out),\n    InBytes = sum(total_in) by src, SimplifiedDeviceAction\n| extend direction=\"Out\", endtime=endtime\n| project-rename IP=src\n| union isfuzzy=true checkpoint",
-                    "db": "[parameters('ADXDatabaseName')]"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/ListKustoResults/false"
-                }
-              }
-            },
-            "outputs": {}
-          },
-          "parameters": {
-            "$connections": {
-              "value": {
-                "azuresentinel": {
-                    "connectionId": "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
-                    "connectionName": "[variables('AzureSentinelConnectionName')]",
-                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureloganalyticsdatacollector')]"
-                },
-                "azuredataexplorer": {
-                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/kusto')]",
-                    "connectionId": "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]",
-                  "connectionName": "[variables('ADXConnectionName')]",
-                  "connectionProperties": {
-                    "authentication": {
-                      "type": "ManagedServiceIdentity"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "identity": {
-          "type": "SystemAssigned"
+          "description": "The Microsoft Sentinel workspace into which the function will be deployed. Has to be in the selected Resource Group."
         }
       }
-    ],
-    "outputs": {}
+    },
+    "variables": {
+        "WorkspaceID": "[concat('Microsoft.OperationalInsights/workspaces/', parameters('Workspace'))]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.OperationalInsights/workspaces",
+        "apiVersion": "2017-03-15-preview",
+        "name": "[parameters('Workspace')]",
+        "location": "[resourceGroup().location]",
+        "resources": [
+          {
+            "type": "savedSearches",
+            "apiVersion": "2020-08-01",
+            "name": "ASim_NetworkSessionCustom",
+            "dependsOn": [
+              "[variables('WorkspaceID')]"
+            ],
+            "properties": {
+              "etag": "*",
+              "displayName": "ASIM NetworkSession custom parser",
+              "category": "Security",
+              "FunctionAlias": "ASim_NetworkSessionCustom",
+              "query": "union isfuzzy=true\nASim_NetworkSessionCustom_SummariesInbound(pack=pack),\nASim_NetworkSessionCustom_SummariesOutbound()\n| project-reorder TimeGenerated, SrcIpAddr, DstIpAddr, NetworkDirection, DvcAction, Eventcount, SrcBytes, DstBytes\n",
+              "version": 1,
+              "functionParameters": "pack:bool=false"      
+            }
+          },
+          {
+            "type": "savedSearches",
+            "apiVersion": "2020-08-01",
+            "name": "ASim_NetworkSessionCustom_SummariesInbound",
+            "dependsOn": [
+              "[variables('WorkspaceID')]"
+            ],
+            "properties": {
+              "etag": "*",
+              "displayName": "Inbound Network Sesison Summaries",
+              "category": "Security",
+              "FunctionAlias": "ASim_NetworkSessionCustom_SummariesInbound",
+              "query": "let NWParser=(disabled:bool=false, pack:bool=false){SummariesNetworkInbound_CL\n| extend SBytes= tolong(OutBytes_d), DBytes = tolong(InBytes_d)\n| project-rename DstIpAddr = IP_s, SrcBytes=SBytes, DstBytes = DBytes, NetworkDirection = direction_s,\nEventcount = ConnectionsCount_d, DvcAction=SimplifiedDeviceAction_s\n| project-keep TimeGenerated, DstIpAddr, SrcBytes, DstBytes, NetworkDirection, Eventcount, DvcAction\n};\nNWParser(disabled=false, pack=false)\n",
+              "version": 1,
+              "functionParameters": "pack:bool=false"      
+            }
+          },{
+            "type": "savedSearches",
+            "apiVersion": "2020-08-01",
+            "name": "ASim_NetworkSessionCustom_SummariesOutbound",
+            "dependsOn": [
+              "[variables('WorkspaceID')]"
+            ],
+            "properties": {
+              "etag": "*",
+              "displayName": "Outbound Network Sesison Summaries",
+              "category": "Security",
+              "FunctionAlias": "ASim_NetworkSessionCustom_SummariesOutbound",
+              "query": "let NWParser=(disabled:bool=false){SummariesNetworkOutbound_CL\n| extend SBytes= tolong(OutBytes_d), DBytes = tolong(InBytes_d)\n| project-rename SrcIpAddr = IP_s, SrcBytes=SBytes, DstBytes = DBytes, NetworkDirection = direction_s,\nEventcount = ConnectionsCount_d, DvcAction=SimplifiedDeviceAction_s\n| project-keep TimeGenerated, SrcIpAddr, SrcBytes, DstBytes, NetworkDirection, Eventcount, DvcAction\n};\nNWParser(false)\n",
+              "version": 1,
+              "functionParameters": "pack:bool=false"      
+            }
+          },
+          {
+            "type": "savedSearches",
+            "apiVersion": "2020-08-01",
+            "name": "Im_NetworkSessionCustom",
+            "dependsOn": [
+              "[variables('WorkspaceID')]"
+            ],
+            "properties": {
+              "etag": "*",
+              "displayName": "Filtered Custom Network Session",
+              "category": "Security",
+              "FunctionAlias": "Im_NetworkSessionCustom",
+              "query": "union isfuzzy=true\nIm_NetworkSessionCustom_SummariesInbound(starttime= starttime, endtime= endtime, srcipaddr_has_any_prefix= srcipaddr_has_any_prefix, dstipaddr_has_any_prefix= dstipaddr_has_any_prefix, ipaddr_has_any_prefix= ipaddr_has_any_prefix, dstportnumber= dstportnumber, hostname_has_any= hostname_has_any, dvcaction= dvcaction, eventresult= eventresult, pack= pack),\nIm_NetworkSessionCustom_SummariesOutbound(starttime= starttime, endtime= endtime, srcipaddr_has_any_prefix= srcipaddr_has_any_prefix, dstipaddr_has_any_prefix= dstipaddr_has_any_prefix, ipaddr_has_any_prefix= ipaddr_has_any_prefix, dstportnumber= dstportnumber, hostname_has_any= hostname_has_any, dvcaction= dvcaction, eventresult= eventresult, pack=pack)",
+              "version": 1,
+              "functionParameters": "starttime:datetime = datetime(null),endtime:datetime = datetime(null),srcipaddr_has_any_prefix:dynamic = dynamic([]),dstipaddr_has_any_prefix:dynamic = dynamic([]),ipaddr_has_any_prefix:dynamic = dynamic([]),hostname_has_any:dynamic = dynamic([]),dvcaction:dynamic = dynamic([]),eventresult:string = '*',disabled:bool = false,dstportnumber:int = int(null),pack:bool = false"      
+            }
+          },
+          {
+            "type": "savedSearches",
+            "apiVersion": "2020-08-01",
+            "name": "Im_NetworkSessionCustomInbound",
+            "dependsOn": [
+              "[variables('WorkspaceID')]"
+            ],
+            "properties": {
+              "etag": "*",
+              "displayName": "Filtered Inbound Network Sesison Summaries",
+              "category": "Security",
+              "FunctionAlias": "Im_NetworkSessionCustomInbound",
+              "query": "let src_or_any=set_union(srcipaddr_has_any_prefix, ipaddr_has_any_prefix); \nlet dst_or_any=set_union(dstipaddr_has_any_prefix, ipaddr_has_any_prefix);  \nlet NWParser = (\n    starttime: datetime=datetime(null), \n    endtime: datetime=datetime(null),\n    srcipaddr_has_any_prefix: dynamic=dynamic([]), \n    dstipaddr_has_any_prefix: dynamic=dynamic([]), \n    ipaddr_has_any_prefix: dynamic=dynamic([]),\n    dstportnumber: int=int(null), \n    hostname_has_any: dynamic=dynamic([]), \n    dvcaction: dynamic=dynamic([]), \n    eventresult: string='*', \n    pack: bool = false) {\n    SummariesNetworkInbound_CL\n    | where (isnull(starttime) or TimeGenerated >= starttime)\n        and (isnull(endtime) or TimeGenerated <= endtime)\n    | where array_length(srcipaddr_has_any_prefix) == 0\n    | where array_length(dst_or_any) == 0 or has_any_ipv4_prefix(IP_s, dst_or_any)\n    | where (array_length(dvcaction) == 0) or SimplifiedDeviceAction_s has_any (dvcaction)\n    | extend SBytes= tolong\n(OutBytes_d), DBytes = tolong(InBytes_d), SrcIpAddr = '0.0.0.0'\n    | project-rename\n        DstIpAddr = IP_s,\n        SrcBytes=SBytes,\n        DstBytes = DBytes,\n        NetworkDirection = direction_s, \n        Eventcount = ConnectionsCount_d,\n        DvcAction=SimplifiedDeviceAction_s\n    | project-keep\n        TimeGenerated,\n        DstIpAddr,\n        SrcBytes,\n        DstBytes,\n        NetworkDirection,\n        Eventcount,\n        DvcAction,\n        SrcIpAddr\n};\nNWParser (starttime, endtime, srcipaddr_has_any_prefix, dstipaddr_has_any_prefix, ipaddr_has_any_prefix, dstportnumber, hostname_has_any, dvcaction, eventresult, pack)",
+              "version": 1,
+              "functionParameters": "disabled:bool = false,starttime:datetime = datetime(null),endtime:datetime = datetime(null),srcipaddr_has_any_prefix:dynamic = dynamic([]),dstipaddr_has_any_prefix:dynamic = dynamic([]),hostname_has_any:dynamic = dynamic([]),dvcaction:dynamic = dynamic([]),dstportnumber:int = int(null)\n"      
+            }
+          },
+          {
+            "type": "savedSearches",
+            "apiVersion": "2020-08-01",
+            "name": "Im_NetworkSessionCustom_SummariesOutbound",
+            "dependsOn": [
+              "[variables('WorkspaceID')]"
+            ],
+            "properties": {
+              "etag": "*",
+              "displayName": "Filtered Outbound Network Sesison Summaries",
+              "category": "Security",
+              "FunctionAlias": "Im_NetworkSessionCustom_SummariesOutbound",
+              "query": "let src_or_any=set_union(srcipaddr_has_any_prefix, ipaddr_has_any_prefix); \nlet dst_or_any=set_union(dstipaddr_has_any_prefix, ipaddr_has_any_prefix);  \nlet NWParser = (\n    starttime: datetime=datetime(null), \n    endtime: datetime=datetime(null),\n    srcipaddr_has_any_prefix: dynamic=dynamic([]), \n    dstipaddr_has_any_prefix: dynamic=dynamic([]), \n    ipaddr_has_any_prefix: dynamic=dynamic([]),\n    dstportnumber: int=int(null), \n    hostname_has_any: dynamic=dynamic([]), \n    dvcaction: dynamic=dynamic([]), \n    eventresult: string='*', \n    pack: bool = false) {\n    SummariesNetworkOutbound_CL\n    | where (isnull(starttime) or TimeGenerated >= starttime)\n        and (isnull(endtime) or TimeGenerated <= endtime)\n    | where array_length(dstipaddr_has_any_prefix) == 0\n    | where array_length(src_or_any) == 0 or has_any_ipv4_prefix(IP_s, src_or_any)\n    | where (array_length(dvcaction) == 0) or SimplifiedDeviceAction_s has_any (dvcaction)\n    | extend SBytes= tolon\n(OutBytes_d), DBytes = tolong(InBytes_d), DstIpAddr='0.0.0.0'\n    | project-rename\n        SrcIpAddr = IP_s,\n        SrcBytes=SBytes,\n        DstBytes = DBytes,\n        NetworkDirection = direction_s, \n        Eventcount = ConnectionsCount_d,\n        DvcAction=SimplifiedDeviceAction_s\n    | project-keep\n        TimeGenerated,\n        SrcIpAddr,\n        SrcBytes,\n        DstBytes,\n        NetworkDirection,\n        Eventcount,\n        DvcAction,\n        DstIpAddr\n};\nNWParser (starttime, endtime, srcipaddr_has_any_prefix, dstipaddr_has_any_prefix, ipaddr_has_any_prefix, dstportnumber, hostname_has_any, dvcaction, eventresult, pack)",
+              "version": 1,
+              "functionParameters": "starttime:datetime = datetime(null),endtime:datetime = datetime(null),srcipaddr_has_any_prefix:dynamic = dynamic([]),dstipaddr_has_any_prefix:dynamic = dynamic([]),ipaddr_has_any_prefix:dynamic = dynamic([]),dstportnumber:int = int(null),hostname_has_any:dynamic = dynamic([]),dvcaction:dynamic = dynamic([])"      
+            }
+          }
+        ]
+      }
+    ]
   }

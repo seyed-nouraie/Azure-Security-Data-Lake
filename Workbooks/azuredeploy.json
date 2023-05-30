@@ -17,7 +17,6 @@
     },
     "workbookSourceId": {
       "type": "string",
-      "defaultValue": "/subscriptions/5332aa87-652c-4714-b0a1-2d2cb3952428/resourcegroups/securityops/providers/microsoft.operationalinsights/workspaces/secops",
       "metadata": {
         "description": "The id of resource instance to which the workbook will be associated"
       }

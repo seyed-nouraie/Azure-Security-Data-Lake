@@ -16,7 +16,7 @@
       {
         "type": "Microsoft.OperationalInsights/workspaces",
         "apiVersion": "2017-03-15-preview",
-        "name": "[parameters('Workspace')]",
+        "name": "[parameters('WorkspaceName')]",
         "location": "[resourceGroup().location]",
         "resources": [
           {

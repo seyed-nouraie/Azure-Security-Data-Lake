@@ -9,6 +9,12 @@
           "description": "Name of the Logic App."
         }
       },
+      "ADXClusterURI":{
+        "type":"string",
+        "metadata":{
+          "description": "URL of the ADX Cluster"
+        }
+      },
       "ADXDatabaseName":{
         "defaultValue": "adxdata001",
         "type": "string",
@@ -126,7 +132,7 @@
                     "inputs": {
                       "body": {
                         "incidentArmId": "@triggerBody()?['object']?['id']",
-                        "message": "<p>Related Events in Past 6 hours:<br>\n@{body('Create_HTML_table')}<br>\n</p>"
+                        "message": "<p>Related Events in Past 3 hours:<br>\n@{body('Create_HTML_table')}<br>\n</p>"
                       },
                       "host": {
                         "connection": {
@@ -143,8 +149,8 @@
                     "inputs": {
                       "body": {
                         "cluster": "[parameters('ADXClusterURI')]",
-                        "csl": "external_table('paloaltotraffic')\n| where rt >= ago(6h) and rt < now()\n| search \"@{items('For_each')?['Address']}\"\n| summarize sum(total_in), sum(total_out), events= count() by src, dst, DestinationPort, SourcePort, ApplicationProtocol, SimplifiedDeviceAction",
-                        "db": "[parameters('ADXDataBase')]"
+                        "csl": "union isfuzzy=true external_table('paloaltotraffic'), external_table('checkpoint')\n| where rt >= ago(6h) and rt < now()\n| search \"@{items('For_each')?['Address']}\"\n| summarize sum(total_in), sum(total_out), events= count() by src, dst, DestinationPort, SourcePort, ApplicationProtocol, SimplifiedDeviceAction",
+                        "db": "[parameters('ADXDataBaseName')]"
                       },
                       "host": {
                         "connection": {

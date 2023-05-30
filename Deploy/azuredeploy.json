@@ -55,8 +55,9 @@
      },
     "variables": {
         "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Summarization/NetworktoSentinel/azuredeploy.json')]",
-        "NetworkEnrichmentTemplae": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Enrichment/NetworkEnrichment/azuredeploy.json')]",
-        "ConnectorTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Connector/azuredeploy.json')]"
+        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Enrichment/NetworkEnrichment/azuredeploy.json')]",
+        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Functions/azuredeploy.json')]",
+        "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Workbooks/azuredeploy.json')]"
     },
     "resources": [
         {
@@ -73,7 +74,7 @@
                     "PlaybookName": {
                         "value": "[parameters('NetworkSummaryPlaybookName')]"
                     },
-                    "ADLSUri": {
+                    "ADXClusterURI": {
                         "value": "[parameters('ADXUri')]"
                     },
                     "WorkspaceID":{
@@ -85,6 +86,35 @@
             }
         }
      },
+        {
+            "apiVersion": "2019-10-01",
+            "name": "SummaryFunctionsTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('FunctionsTemplate')]",
+                    "contentVersion": "1.0.0.0"
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-10-01",
+            "name": "SummaryWorkbooksTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('NetworkEnrichmentTemplate')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ADXClusterURI": {
+                        "value": "[parameters('NetworkEnrichmentPlaybookName')]"
+                    }
+                }
+            }
+        },
         {
             "apiVersion": "2019-10-01",
             "name": "NetworkEnrichmentTemplate",
@@ -100,37 +130,6 @@
                         "value": "[parameters('NetworkEnrichmentPlaybookName')]"
                     }
                 }
-            }
-        },
-        {
-            "condition": "[parameters('DeployConnector')]",
-            "apiVersion": "2019-10-01",
-            "name": "DeployConnector",
-            "type": "Microsoft.Resources/deployments",
-            "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'NetworkSummariesTemplate')]",
-                "[resourceId('Microsoft.Resources/deployments', 'NetworkEnrichmentTemplate')]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('ConnectorTemplate')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                     "CustomConnectorName": {
-                        "value": "[parameters('CustomConnectorName')]"
-                    },
-                    "CustomConnectorDisplayName": {
-                        "value": "[parameters('CustomConnectorDisplayName')]"
-                    },
-                    "NetworkSummariesPlaybook_resourceid": {
-                        "value": "[reference('NetworkSummariesTemplate').outputs.resourceID.value]"
-                    },
-                    "NetworkEnrichmentTemplatePlaybook_resourceid": {
-                        "value": "[reference('NetworkEnrichmentTemplate').outputs.resourceID.value]"
-                    }
-                 }
             }
         }
     ]

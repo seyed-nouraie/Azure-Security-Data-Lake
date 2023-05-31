@@ -8,6 +8,8 @@ This solution utilizes cloud data storage, automation, and analytics to provide 
 - It expands the analytics capabilities, allowing for the analysis of Indicators of Attack (IOA) and Indicators of Compromise (IOC) to enhance security detection and correlation.
 - The solution focuses on collecting and analyzing network, endpoint, communication, and identity data in a central data lake for effective analytics and investigations.
 
+We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer, and Azure Sentinel SIEM. Additionally, we will demonstrate how to use the data lake for investigating and enriching incidents, allowing security analysts to more rapidly investigate and resolve incidents.
+
 ### Components
 * [Summarization](#Summarization)
 * [Enrichment](#Enrichment)

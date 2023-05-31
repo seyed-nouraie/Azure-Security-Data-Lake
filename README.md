@@ -1,5 +1,5 @@
 # Microsoft Security Data eXchange - MSDX
-MSDX is your platform for extracting security value out of your data lake and shipping it directly to Sentinel. 
+Your platform for extracting and shipping security value from your data lake to Sentinel. 
 
 Security thrives when you don't have to choose between dropping your logs and dropping your budget. Large models make your data more valuable, and your insights more reachable than ever before. Ingest and store your data into a data lake at a fraction of the cost of the SIEM, while unlocking security insights that were complete gaps prior.
 

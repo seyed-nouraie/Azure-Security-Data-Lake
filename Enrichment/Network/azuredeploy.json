@@ -4,7 +4,7 @@
     "parameters": {
       "PlaybookName": {
         "type": "string",
-        "defaultValue": "MSDX-Enrichment-Network",
+        "defaultValue": "DataLake-Enrichment-Network",
         "metadata": {
           "description": "Name of the Logic App."
         }

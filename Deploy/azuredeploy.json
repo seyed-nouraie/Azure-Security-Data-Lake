@@ -78,6 +78,26 @@
             }
         }
      },
+     {
+        "apiVersion": "2019-10-01",
+        "name": "NetworkEnrichmentPlaybook",
+        "type": "Microsoft.Resources/deployments",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[variables('NetworkEnrichmentTemplate')]",
+                "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "PlaybookName": {
+                    "value": "[parameters('NetworkEnrichmentPlaybookName')]"
+                },
+                "ADXClusterURI": {
+                    "value": "[parameters('ADXClusterURI')]"
+                }
+        }
+    }
+ }
         {
             "apiVersion": "2019-10-01",
             "name": "SummaryFunctionsTemplate",

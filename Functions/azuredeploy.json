@@ -10,7 +10,7 @@
       }
     },
     "variables": {
-        "WorkspaceID": "[concat('Microsoft.OperationalInsights/workspaces/', parameters('Workspace'))]"
+        "WorkspaceID": "[concat('Microsoft.OperationalInsights/workspaces/', parameters('WorkspaceName'))]"
     },
     "resources": [
       {

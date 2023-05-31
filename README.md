@@ -1,4 +1,4 @@
-# Microsoft Security Data eXchange - MSDX
+# Azure Security Data Lake
 Your platform for extracting and shipping security value from your data lake to Sentinel. 
 
 Security thrives when you don't have to choose between dropping your logs and dropping your budget. Large models make your data more valuable, and your insights more reachable than ever before. Ingest and store your data into a data lake at a fraction of the cost of the SIEM, while unlocking security insights that were complete gaps prior.

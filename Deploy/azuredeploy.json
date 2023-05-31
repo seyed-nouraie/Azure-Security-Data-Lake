@@ -10,19 +10,11 @@
        "defaultValue": "MSDX-Enrich-Network",
        "type": "string"
         },
-       "DeployConnector": {
-            "defaultValue": true,
-            "type": "bool"
-        },
-        "CustomConnectorName": {
-            "defaultValue": "MSDX",
+        "WorkspaceName": {
+            "defaultValue": "The Microsoft Sentinel workspace into which the function will be deployed. Has to be in the selected Resource Group.",
             "type": "string"
         },
-        "CustomConnectorDisplayName": {
-            "defaultValue": "Microsoft Security Data eXchange - MSDX",
-            "type": "string"
-        },
-        "ADXUri": {
+        "ADXClusterURI": {
             "defaultValue": "https://<YOURADXURI>.centralus.kusto.windows.net/",
             "type": "string",
             "metadata": {
@@ -54,8 +46,8 @@
         }
      },
     "variables": {
-        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Summarization/NetworktoSentinel/azuredeploy.json')]",
-        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Enrichment/NetworkEnrichment/azuredeploy.json')]",
+        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Summarization/Network/azuredeploy.json')]",
+        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Enrichment/Network/azuredeploy.json')]",
         "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Functions/azuredeploy.json')]",
         "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Workbooks/azuredeploy.json')]"
     },
@@ -75,12 +67,12 @@
                         "value": "[parameters('NetworkSummaryPlaybookName')]"
                     },
                     "ADXClusterURI": {
-                        "value": "[parameters('ADXUri')]"
+                        "value": "[parameters('ADXClusterURI')]"
                     },
-                    "WorkspaceID":{
+                    "SentinelWorkspaceID":{
                         "value": "[parameters('SentinelWorkspaceID')]"
                     },
-                    "WorkspaceKey":{
+                    "SentinelWorkspaceKey":{
                      "value": "[parameters('SentinelWorkspaceKey')]"
                     }
             }
@@ -95,6 +87,11 @@
                 "templateLink": {
                     "uri": "[variables('FunctionsTemplate')]",
                     "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "WorkspaceName": {
+                        "value": "[parameters('WorkspaceName')]"
+                    }
                 }
             }
         },
@@ -110,24 +107,7 @@
                 },
                 "parameters": {
                     "ADXClusterURI": {
-                        "value": "[parameters('NetworkEnrichmentPlaybookName')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2019-10-01",
-            "name": "NetworkEnrichmentTemplate",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('NetworkEnrichmentTemplate')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "PlaybookName": {
-                        "value": "[parameters('NetworkEnrichmentPlaybookName')]"
+                        "value": "[parameters('ADXClusterURI')]"
                     }
                 }
             }

@@ -3,11 +3,11 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
        "NetworkSummaryPlaybookName": {
-          "defaultValue": "MSDX-Summarize-Network",
+          "defaultValue": "DataLake-Summarize-Network",
           "type": "string"
         },
       "NetworkEnrichmentPlaybookName": {
-       "defaultValue": "MSDX-Enrich-Network",
+       "defaultValue": "DataLake-Enrich-Network",
        "type": "string"
         },
         "ADXClusterURI": {
@@ -36,10 +36,10 @@
         }
      },
     "variables": {
-        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Summarization/Network/azuredeploy.json')]",
-        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Enrichment/Network/azuredeploy.json')]",
-        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Functions/azuredeploy.json')]",
-        "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/MSDX/', parameters('DeploymentBranch'), '/Workbooks/azuredeploy.json')]"
+        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Summarization/Network/azuredeploy.json')]",
+        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Enrichment/Network/azuredeploy.json')]",
+        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Functions/azuredeploy.json')]",
+        "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Workbooks/azuredeploy.json')]"
     },
     "resources": [
         {

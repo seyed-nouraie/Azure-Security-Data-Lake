@@ -6,20 +6,24 @@ Security thrives when you don't have to choose between dropping your logs and dr
 MSDX is designed to sift through your lake and find security gold. We do this by summarizing the data, and only returning the summarized data to Sentinel. Your SIEM now has highly concentrated information which it can use for OoB Rules (MSDX functions), and workbooks for quick visualization and hunting (MSDX Workbooks). 
 
 ### Components
-1. [Summarization](./README.md#Summarization)
-2. [Enrichment](./README.md#Enrichment)
-3. [Functions](./README.md#Functions)
-4. [Workbooks](./README.md#Workbooks)
-5. [Deployment](./README.md#Deployment)
+* [Summarization](./README.md#Summarization)
+* [Enrichment](./README.md#Enrichment)
+* [Functions](./README.md#Functions)
+* [Workbooks](./README.md#Workbooks)
+* [Deployment](./README.md#Deployment)
 
 
 ### Summarization
+Many detection use cases don't require each individual log record. MSDX summarization runs an hourly playbook against ADX that aggregates entity data from an external table in ADLS. Doing so, only the summarized data is ingested into compute ready (Sentinel) storage while the raw data is kept in ADLS for ad hoc searches or as other analytics use cases are developed. 
 
 ### Enrichment
+After an incident triggers on summarized data, the next step might be to query the raw logs. We have automated this through enrichment playbooks. These playbooks trigger on an incident and pull contextual logs from ADLS back into the incident to help direct the SOC.
 
 ### Functions
+Summarized entities are ingested into custom tables, but can utilize the power of Out of the Box content using ASIM functions. MSDX provides ASIM functions which integrate the network summary tables to the ASIM and IM Network session functions. 
 
 ### Workbooks
+The MSDX workbook is intended to be the one stop for monitoring trends, anomalies, and the activity of your summarized data. The workbook provides top entities and allows you to pivot and correlate from firewall to endpoint log sources, putting together a full chain of events.
 
 ### Deployment
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fseyed-nouraie%2FMSDX%2Fmain%2FDeploy%2Fazuredeploy.json)

@@ -1,9 +1,12 @@
 # Azure Security Data Lake
-Your platform for extracting and shipping security value from your data lake to Sentinel. 
+Today's security analysts require comprehensive visibility and an analytics framework to enhance their ability to identify and defend against threat actors in the ever-expanding security landscape. To be effective, the SIEM requires a collaborative partner to enhance its correlation, detection, and automation capabilities. This solution we will demonstrate how to implement an enterprise cloud-based scalable data lake and Azure analytics solution which can provide better visibility into various log data sources (such as SaaS, PaaS, and IaaS) without incurring excessive costs, while also meeting compliance and long-term retention requirements.
 
-Security thrives when you don't have to choose between dropping your logs and dropping your budget. Large models make your data more valuable, and your insights more reachable than ever before. Ingest and store your data into a data lake at a fraction of the cost of the SIEM, while unlocking security insights that were complete gaps prior.
+This solution utilizes cloud data storage, automation, and analytics to provide the following improvements:
 
-This solution is designed to sift through your lake and find security gold. We do this by summarizing the data, and only returning the summarized data to Sentinel. Your SIEM now has highly concentrated information which it can use for OoB Rules (functions), and workbooks for quick visualization and hunting (Workbooks). 
+- It addresses the shared data needs of compliance, infrastructure, and security domains.
+- It proactively prepares data for advanced analytics, such as artificial intelligence engines and models.
+- It expands the analytics capabilities, allowing for the analysis of Indicators of Attack (IOA) and Indicators of Compromise (IOC) to enhance security detection and correlation.
+- The solution focuses on collecting and analyzing network, endpoint, communication, and identity data in a central data lake for effective analytics and investigations.
 
 ### Components
 * [Summarization](#Summarization)

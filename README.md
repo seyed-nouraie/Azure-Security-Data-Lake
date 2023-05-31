@@ -6,11 +6,11 @@ Security thrives when you don't have to choose between dropping your logs and dr
 MSDX is designed to sift through your lake and find security gold. We do this by summarizing the data, and only returning the summarized data to Sentinel. Your SIEM now has highly concentrated information which it can use for OoB Rules (MSDX functions), and workbooks for quick visualization and hunting (MSDX Workbooks). 
 
 ### Components
-* [Summarization](./README.md#Summarization)
-* [Enrichment](./README.md#Enrichment)
-* [Functions](./README.md#Functions)
-* [Workbooks](./README.md#Workbooks)
-* [Deployment](./README.md#Deployment)
+* [Summarization](#Summarization)
+* [Enrichment](#Enrichment)
+* [Functions](#Functions)
+* [Workbooks](#Workbooks)
+* [Deployment](#Deployment)
 
 
 ### Summarization

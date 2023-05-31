@@ -10,32 +10,22 @@
        "defaultValue": "MSDX-Enrich-Network",
        "type": "string"
         },
-        "WorkspaceName": {
-            "defaultValue": "The Microsoft Sentinel workspace into which the function will be deployed. Has to be in the selected Resource Group.",
-            "type": "string"
-        },
         "ADXClusterURI": {
-            "defaultValue": "https://<YOURADXURI>.centralus.kusto.windows.net/",
             "type": "string",
             "metadata": {
                 "description": "Your ADX Cluster URI"
               }
         },
-        "ADXDataBase": {
-            "defaultValue": "adxdata001",
-            "type": "string",
+        "SentinelWorkspaceName": {
             "metadata": {
-                "description": "Your ADX Database Name"
-              }
-        },
-        "DeploymentBranch": {
-            "defaultValue": "main",
+                "description": "The Microsoft Sentinel workspace into which the function will be deployed. Has to be in the selected Resource Group."
+            }
             "type": "string"
         },
         "SentinelWorkspaceID": {
              "type": "string",
              "metadata": {
-             "description": "The workspace ID of your Sentinel"
+             "description": "The workspace ID of your Sentinel workspace"
               }
         },
         "SentinelWorkspaceKey": {
@@ -110,7 +100,7 @@
                 },
                 "parameters": {
                     "WorkspaceName": {
-                        "value": "[parameters('WorkspaceName')]"
+                        "value": "[parameters('SentinelWorkspaceName')]"
                     }
                 }
             }

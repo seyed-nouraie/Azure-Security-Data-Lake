@@ -95,9 +95,9 @@
                 "ADXClusterURI": {
                     "value": "[parameters('ADXClusterURI')]"
                 }
-        }
-    }
- },
+                }
+            }
+        },
         {
             "apiVersion": "2019-10-01",
             "name": "SummaryFunctionsTemplate",

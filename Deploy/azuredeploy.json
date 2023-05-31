@@ -36,10 +36,10 @@
         }
      },
     "variables": {
-        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Summarization/Network/azuredeploy.json')]",
-        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Enrichment/Network/azuredeploy.json')]",
-        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Functions/azuredeploy.json')]",
-        "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/', parameters('DeploymentBranch'), '/Workbooks/azuredeploy.json')]"
+        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Summarization/Network/azuredeploy.json')]",
+        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Enrichment/Network/azuredeploy.json')]",
+        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Functions/azuredeploy.json')]",
+        "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Workbooks/azuredeploy.json')]"
     },
     "resources": [
         {

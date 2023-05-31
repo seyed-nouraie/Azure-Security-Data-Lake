@@ -4,7 +4,7 @@
     "parameters": {
       "PlaybookName": {
         "type": "string",
-        "defaultValue": "MSDX-Summarize-Network",
+        "defaultValue": "DataLake-Summarize-Network",
         "metadata": {
           "description": "Name of the Logic App."
         }

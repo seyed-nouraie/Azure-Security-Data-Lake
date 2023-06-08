@@ -112,7 +112,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[variables('NetworkEnrichmentTemplate')]",
+                    "uri": "[variables('WorkbookTemplate')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {

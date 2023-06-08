@@ -118,6 +118,9 @@
                 "parameters": {
                     "ADXClusterURI": {
                         "value": "[parameters('ADXClusterURI')]"
+                    },
+                    "sentinelWorkspace": {
+                        "value": "[parameters('SentinelWorkspaceName')]"
                     }
                 }
             }

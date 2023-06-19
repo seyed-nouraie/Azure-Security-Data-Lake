@@ -10,6 +10,21 @@ This solution utilizes cloud data storage, automation, and analytics to provide 
 
 We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer, and Azure Sentinel SIEM. Additionally, we will demonstrate how to use the data lake for investigating and enriching incidents, allowing security analysts to more rapidly investigate and resolve incidents.
 
+![AzureDataLakeFlow01](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/12141454/02adf71a-ff7e-4cef-b236-4d84474328c1)
+
+1. Extract, transform, and load logging data into ADLS.  Transforms include structure formatting and parquet output.
+2. Each logging entity resides in its own container with standard chronological organization.
+3. External tables are created at the container level for each logging entity. The majority of compute-work is done by ADX. Internal tables are created for summary data.
+4. Logic app performs entity summarization of hourly data lake data through ADX
+     a. Source and Destination IP
+     b. Bytes
+     c. Device action
+5. Logic app sends summarized data to Sentinel table.
+6. Sentinel table is normalized through ASIM Network Events Schema.
+7. Many analytics rules, IOC lookups, workbooks, and searches can continue to directly refer to the ASIM normalized schema without modification.
+8. On Incident trigger logic app runs to enrich incident with relevant data lake event information and OpenAI enrichment.
+9. Connect to external or internal tables using direct query.  Dashboards and reports will show near-time updates as logs hit ADLS.
+
 ### Components
 * [Summarization](#Summarization)
 * [Enrichment](#Enrichment)

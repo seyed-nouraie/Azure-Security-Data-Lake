@@ -25,6 +25,8 @@ We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer
 8. On Incident trigger logic app runs to enrich incident with relevant data lake event information and OpenAI enrichment.
 9. Connect to external or internal tables using direct query.  Dashboards and reports will show near-time updates as logs hit ADLS.
 
+Follow our blog and video series at https://azurecloudai.blog/2023/06/21/azure-security-data-lake/
+
 ### Components
 * [Summarization](#Summarization)
 * [Enrichment](#Enrichment)

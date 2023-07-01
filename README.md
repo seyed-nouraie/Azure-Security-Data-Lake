@@ -58,6 +58,6 @@ The workbook is intended to be the one stop for monitoring trends, anomalies, an
 
 
 ### Glossary
-*[ADX - Azure Data Explorer](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
-*[ADLS - Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction)
-*[ASIM - Advanced Security Information Model](https://learn.microsoft.com/en-us/azure/sentinel/normalization)
+* [ADX - Azure Data Explorer](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
+* [ADLS - Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction)
+* [ASIM - Advanced Security Information Model](https://learn.microsoft.com/en-us/azure/sentinel/normalization)

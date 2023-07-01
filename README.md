@@ -12,7 +12,7 @@ We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer
 
 ![AzureDataLakeFlow01](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/12141454/02adf71a-ff7e-4cef-b236-4d84474328c1)
 
-1. [Extract, transform, and load]((https://github.com/seyed-nouraie/Azure-Data-Lake-ETL/tree/main/Nifi) logging data into ADLS.  Transforms include structure formatting and parquet output.
+1. [Extract, transform, and load](https://github.com/seyed-nouraie/Azure-Data-Lake-ETL/tree/main/Nifi) logging data into ADLS.  Transforms include structure formatting and parquet output.
 2. Each logging entity resides in its own container with standard chronological organization.
 3. External tables are created at the container level for each logging entity. The majority of compute-work is done by ADX. Internal tables are created for summary data.
 4. Logic app performs entity summarization of hourly data lake data through ADX

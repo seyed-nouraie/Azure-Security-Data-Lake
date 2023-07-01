@@ -1,4 +1,6 @@
 # Azure Security Data Lake
+[Skip to deployment](#Deployment)
+
 Today's security analysts require comprehensive visibility and an analytics framework to enhance their ability to identify and defend against threat actors in the ever-expanding security landscape. To be effective, the SIEM requires a collaborative partner to enhance its correlation, detection, and automation capabilities. This solution we will demonstrate how to implement an enterprise cloud-based scalable data lake and Azure analytics solution which can provide better visibility into [various log data sources](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/DataSources) (such as SaaS, PaaS, and IaaS) without incurring excessive costs, while also meeting compliance and long-term retention requirements.
 
 This solution utilizes cloud data storage, automation, and analytics to provide the following improvements:
@@ -53,3 +55,9 @@ The workbook is intended to be the one stop for monitoring trends, anomalies, an
 
 ### Deployment
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fseyed-nouraie%2FAzure-Security-Data-Lake%2Fmain%2FDeploy%2Fazuredeploy.json)
+
+
+### Glossary
+[ADX - Azure Data Explorer](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
+[ADLS - Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction)
+[ASIM - Advanced Security Information Model](https://learn.microsoft.com/en-us/azure/sentinel/normalization)

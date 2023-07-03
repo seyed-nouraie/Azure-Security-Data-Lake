@@ -5,8 +5,8 @@ After data is in ADLS, external tables can be created to point to that data. ADX
 * [Introduction](#Introduction)
    * [What is ADX](#What-is-ADX)
    * [What are External Tables?](#What-are-External-Tables)
-   * [Why External Tables](#Why-External_Tables)
-   * [Why External Tables](#Pre-requisites)
+   * [Why External Tables](#Why-External-Tables)
+   * [Pre-requisites](#Pre-requisites)
 * [Setup](#Setup)
 
   

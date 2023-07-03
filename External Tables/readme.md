@@ -16,7 +16,6 @@ Azure Data Explorer (ADX) is a "fully managed, high-performance, big data analyt
 External tables in ADX are pointers to data stored in Azure Storage or SQL Server tables. This is in contrast to regular tables which are hosted in ADX itself. 
 External tables are defined by a table name, schema, partitions, path format, data format, and connection string.
 
-
 ### Why External Tables
 Tables in ADX are ingested and accessed through a compute frontend. This ties any interaction with that data to ADX compute. By using external tables we decouple storage and compute. This allows access to your data with your selection of compute resource, and only paying for compute when needed, dramatically lowering ingestion cost.
 
@@ -28,7 +27,7 @@ Tables in ADX are ingested and accessed through a compute frontend. This ties an
 ### Information to Gather:
 * Storage account name
 * Storage account key (used once for inferring schema)
-* Container path format (ie: 2023-02-12/01/24 = {yyyy}-{MM}-{dd}/{HH}/{mm})
+* Container path format (ie: 2023-02-12/01/24: {yyyy}-{MM}-{dd}/{HH}/{mm})
 * Storage account owner (to grant ADX access to the Storage account)
 
 
@@ -45,26 +44,32 @@ ADX will be using a [managed identity to access ADLS](https://learn.microsoft.co
     }
 ]```
 ```
-3. Grant ADX permissions to ADLS (storage blob data reader)
+3. Grant the ADX identity permissions to ADLS
+   * Storage Blob Data Reader
 
    
 ### Inferring Log Schema
 External tables in ADX require a schema. The schema defines the column names and their data types. Instead of manually extracting this information, we use the [infer_storage_schema plugin](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/inferstorageschemaplugin) in ADX to infer the schema. After doing so, review the results to ensure the schema is accurate.
 
 1. Open the ADX database
-2. Run the following command 
+2. Run the following command (if the command takes too long you can replace the connecetion string h@'...' with the path to a subset of the logs).
 ```kql
 let options = dynamic({
   'StorageContainers': [
   h@'https://<Storage Account Name>.blob.core.windows.net/<Container>;<Storage Account Key>'
   ],
   'FileExtension': '<File Extension>',
-  'Kind': 'blob',
+  'Kind': 'storage',
   'partition': '(MinuteBin:datetime = bin(<Time Field Name in Logs>, 1m))',
   'pathformat': '(datetime_pattern("<Container Path Format>",MinuteBin))',
   'DataFormat': '<Log Format>'
 });
 evaluate infer_storage_schema(options)
 ```
+3. Verify the accuracy of the output schema
+4. Copy the value of the output
 
+#### Example:
+<img width="500" alt="InferSchema" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/3451644c-8f3a-4815-a0fe-0ce882617266">\
+<img width="500" alt="Schema Output" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/c31cebcd-29c2-4164-9a0a-5246c02798de">
 

@@ -25,7 +25,7 @@ Azure Data Explorer (ADX) is a "fully managed, high-performance, big data analyt
 External tables in ADX are pointers to data stored in Azure Storage or SQL Server tables. This is in contrast to regular tables which are hosted in ADX itself. 
 External tables are defined by a table name, schema, partitions, path format, data format, and connection string.
 
-## Why Use External Tables
+## Why External Tables
 Tables in ADX are ingested and accessed through a compute frontend. This ties any interaction with that data to ADX compute. By using external tables we decouple storage and compute. This allows access to your data with your selection of compute resource, and only paying for compute when needed, dramatically lowering ingestion cost.
 
 ## Granting ADX Access to ADLS

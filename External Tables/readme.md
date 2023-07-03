@@ -70,6 +70,6 @@ evaluate infer_storage_schema(options)
 4. Copy the value of the output
 
 #### Example:
-<img width="800" alt="InferSchema" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/3451644c-8f3a-4815-a0fe-0ce882617266">\
+<img width="1000" alt="InferSchema" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/3451644c-8f3a-4815-a0fe-0ce882617266">\
 <img width="500" alt="Schema Output" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/c31cebcd-29c2-4164-9a0a-5246c02798de">
 

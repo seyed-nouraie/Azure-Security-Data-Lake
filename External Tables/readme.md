@@ -1,4 +1,4 @@
-# Accessing Data in ADLS
+![image](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/13bbcea8-d825-4ebd-9d73-bb268eedf999)# Accessing Data in ADLS
 
 After data is in ADLS, external tables can be created to point to that data. 
 
@@ -56,7 +56,7 @@ External tables in ADX require a schema. The schema defines the column names and
 ```kql
 let options = dynamic({
   'StorageContainers': [
-  h@'https://<Storage Account Name>.blob.core.windows.net/<Container>;<Storage Account Key>'
+  h@'https://<Storage Account Name>.blob.core.windows.net/<Container>/<Optional Path to Subset of Logs>;<Storage Account Key>'
   ],
   'FileExtension': '<File Extension>',
   'Kind': 'storage',
@@ -70,6 +70,26 @@ evaluate infer_storage_schema(options)
 4. Copy the value of the output
 
 #### Example:
-<img width="1000" alt="InferSchema" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/3451644c-8f3a-4815-a0fe-0ce882617266">\
+<img width="1000" alt="InferSchema" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/3451644c-8f3a-4815-a0fe-0ce882617266">
 <img width="500" alt="Schema Output" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/c31cebcd-29c2-4164-9a0a-5246c02798de">
 
+### Creating the External Table
+Now the external table can be created with the schema and managed identity. We are using a virtual column (IngestTime) to partition the table. This adds a new column to the logs that reads the datetime from the container format and optimizes filtering by that column. To learn more about partitioning read [here](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/external-tables-azurestorage-azuredatalake#partitions-formatting).
+1. Open the ADX database
+2. Run the following command
+```kql
+.create external table <External Table Name>(<Schema Output>)
+kind=storage
+partition by (IngestTime:datetime)
+pathformat=(datetime_pattern('<Path Format>',IngestTime))
+dataformat=<Log Format>
+(
+  h@'https://<Storage Account Name>.blob.core.windows.net/<Container>;managed_identity=system'
+)
+```
+
+### Querying the External Table
+```kql
+external_table("<External Table Name>")
+ | where IngestTime between (ago(1h) .. now())
+```

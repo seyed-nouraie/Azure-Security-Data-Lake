@@ -39,7 +39,7 @@ Follow our blog and video series at https://azurecloudai.blog/2023/06/21/azure-s
 
 
 ### ADX External Tables
-External tables pointing to ADLS are created in Sentinel. Each top level container includes a different [log source](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/DataSources). These external tables decouple compute from storage, allowing ADX to only access the data as needed. These external tables are used for summarization and enrichment of incidents from Sentinel.
+External tables pointing to ADLS are created in Sentinel. Each top level container includes a different [log source](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/DataSources). These external tables decouple compute from storage, allowing ADX to only access the data as needed. These external tables are used for summarization and enrichment of incidents from Sentinel. ADX configuration can be found [here](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/ADX).
 
 ### Summarization
 Many detection use cases don't require each individual log record. This summarization runs an hourly playbook against ADX that aggregates entity data from an external table in ADLS. Doing so, only the summarized data is ingested into compute ready (Sentinel) storage while the raw data is kept in ADLS for ad hoc searches or as other analytics use cases are developed. 

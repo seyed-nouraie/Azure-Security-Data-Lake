@@ -28,7 +28,8 @@ External tables are defined by a table name, schema, partitions, path format, da
 ## Why External Tables
 Tables in ADX are ingested and accessed through a compute frontend. This ties any interaction with that data to ADX compute. By using external tables we decouple storage and compute. This allows access to your data with your selection of compute resource, and only paying for compute when needed, dramatically lowering ingestion cost.
 
-## Granting ADX Access to ADLS
+## Setup
+### Granting ADX Access to ADLS
 ADX will be using a [managed identity to access ADLS](https://learn.microsoft.com/en-us/azure/data-explorer/external-tables-managed-identities?tabs=system-assigned%2Cazure-storage#1---configure-a-managed-identity-for-use-with-external-tables). In order to do this:
 1. Open the ADX database
 2. Run the following command to enable managed identity usage for external tables
@@ -43,7 +44,7 @@ ADX will be using a [managed identity to access ADLS](https://learn.microsoft.co
 3. Grant ADX permissions to ADLS (storage blob data reader)
 
    
-## Inferring Log Schema
+### Inferring Log Schema
 External tables in ADX require a schema. The schema defines the column names and their data types. Instead of manually extracting this information, we use the [infer_storage_schema plugin](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/inferstorageschemaplugin) in ADX to infer the schema. After doing so, review the results to ensure the schema is accurate.
 
 1. Open the ADX database

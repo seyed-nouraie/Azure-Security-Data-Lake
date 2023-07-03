@@ -1,13 +1,21 @@
 # Accessing Data in ADLS
+After data is in ADLS, external tables can be created to point to that data. ADX will be used to query the data lake and return extracted security value back to Sentinel.
 
-After data is in ADLS, external tables can be created to point to that data. 
+### Components
+* [Introduction](#Introduction)
+   * [What is ADX](#What-is-ADX)
+   * [What are External Tables?](#What-are-External-Tables)
+   * [Why External Tables](#Why-External_Tables)
+   * [Why External Tables](#Pre-requisites)
+* [Setup](#Setup)
 
+  
 #### Microsoft documentation:
 * [What is ADX?](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
 * [External Table Overview](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/externaltables)
 * [Setup External Tables](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/external-tables-azurestorage-azuredatalake)
 
-## Intro
+## Introduction
 
 ### What is ADX?
 Azure Data Explorer (ADX) is a "fully managed, high-performance, big data analytics platform that makes it easy to analyze high volumes of data in near real time" [source](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview). ADX is used to access data in the data lake.

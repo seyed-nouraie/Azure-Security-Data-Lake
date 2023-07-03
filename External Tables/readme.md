@@ -8,12 +8,14 @@ Microsoft documentation:
 
 Pre-requisites:
 * Logs in ADLS Gen 2 storage account in one of the ADX [supported formats](https://learn.microsoft.com/en-us/azure/data-explorer/ingestion-supported-formats) (preferrably parquet)
+* An ADX Cluster and Database [stood up](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free)
+* Database Admin Permissions on the ADX database
+
+Information to Gather:
 * Storage account name
 * Storage account key (used once for inferring schema)
 * Container path format (ie: 2023-02-12/01/24 = {yyyy}-{MM}-{dd}/{HH}/{mm})
 * Storage account owner (to grant ADX access to the Storage account)
-* An ADX Cluster and Database [stood up](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free)
-* Database Admin Permissions on the ADX database
 
 ## What is ADX?
 Azure Data Explorer (ADX) is a "fully managed, high-performance, big data analytics platform that makes it easy to analyze high volumes of data in near real time" [source](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview). ADX is used to access data in the data lake.

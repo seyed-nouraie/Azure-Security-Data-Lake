@@ -16,7 +16,7 @@ We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer
 
 1. [Extract, transform, and load](https://github.com/seyed-nouraie/Azure-Data-Lake-ETL/tree/main/Nifi) logging data into ADLS.  Transforms include structure formatting and parquet output.
 2. Each logging entity resides in its own container with standard chronological organization.
-3. External tables are created at the container level for each logging entity. The majority of compute-work is done by ADX. Internal tables are created for summary data.
+3. [External tables are created](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/ADX) at the container level for each logging entity. The majority of compute-work is done by ADX. Internal tables are created for summary data.
 4. Logic app performs entity summarization of hourly data lake data through ADX
      * Source and Destination IP
      * Bytes
@@ -25,7 +25,7 @@ We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer
 6. Sentinel table is normalized through ASIM Network Events Schema.
 7. Many analytics rules, IOC lookups, workbooks, and searches can continue to directly refer to the ASIM normalized schema without modification.
 8. On Incident trigger logic app runs to enrich incident with relevant data lake event information and OpenAI enrichment.
-9. Connect to external or internal tables using direct query.  Dashboards and reports will show near-time updates as logs hit ADLS.
+9. Connect to external or internal tables using direct query. Dashboards and reports will show near-time updates as logs hit ADLS.
 
 Follow our blog and video series at https://azurecloudai.blog/2023/06/21/azure-security-data-lake/
 
@@ -39,7 +39,7 @@ Follow our blog and video series at https://azurecloudai.blog/2023/06/21/azure-s
 
 
 ### ADX External Tables
-External tables pointing to ADLS are created in Sentinel. Each top level container includes a different [log source](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/DataSources). These external tables decouple compute from storage, allowing ADX to only access the data as needed. These external tables are used for summarization and enrichmentn of incidents from Sentinel.
+External tables pointing to ADLS are created in Sentinel. Each top level container includes a different [log source](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/DataSources). These external tables decouple compute from storage, allowing ADX to only access the data as needed. These external tables are used for summarization and enrichment of incidents from Sentinel.
 
 ### Summarization
 Many detection use cases don't require each individual log record. This summarization runs an hourly playbook against ADX that aggregates entity data from an external table in ADLS. Doing so, only the summarized data is ingested into compute ready (Sentinel) storage while the raw data is kept in ADLS for ad hoc searches or as other analytics use cases are developed. 

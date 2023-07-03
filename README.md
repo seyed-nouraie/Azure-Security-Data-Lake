@@ -54,6 +54,10 @@ Summarized entities are ingested into custom tables, but can utilize the power o
 The workbook is intended to be the one stop for monitoring trends, anomalies, and the activity of your summarized data. The workbook provides top entities and allows you to pivot and correlate from firewall to endpoint log sources, putting together a full chain of events.
 
 ### Deployment
+1. [Set up ADLS](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/ADLS)
+2. [Send Data to ADLS](https://github.com/seyed-nouraie/Azure-Data-Lake-ETL/tree/main/Nifi)
+3. [Create External Tables](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/External-Tables)
+4. Deploy:
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fseyed-nouraie%2FAzure-Security-Data-Lake%2Fmain%2FDeploy%2Fazuredeploy.json)
 
 

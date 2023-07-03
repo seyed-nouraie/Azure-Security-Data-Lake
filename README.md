@@ -18,9 +18,9 @@ We will be utilizing Azure Storage Account Gen2, Logic Apps, Azure Data Explorer
 2. Each logging entity resides in its own container with standard chronological organization.
 3. External tables are created at the container level for each logging entity. The majority of compute-work is done by ADX. Internal tables are created for summary data.
 4. Logic app performs entity summarization of hourly data lake data through ADX
-     a. Source and Destination IP
-     b. Bytes
-     c. Device action
+     * Source and Destination IP
+     * Bytes
+     * Device action
 5. Logic app sends summarized data to Sentinel table.
 6. Sentinel table is normalized through ASIM Network Events Schema.
 7. Many analytics rules, IOC lookups, workbooks, and searches can continue to directly refer to the ASIM normalized schema without modification.

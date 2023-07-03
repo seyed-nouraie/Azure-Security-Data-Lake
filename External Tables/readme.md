@@ -1,4 +1,4 @@
-![image](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/13bbcea8-d825-4ebd-9d73-bb268eedf999)# Accessing Data in ADLS
+# Accessing Data in ADLS
 
 After data is in ADLS, external tables can be created to point to that data. 
 

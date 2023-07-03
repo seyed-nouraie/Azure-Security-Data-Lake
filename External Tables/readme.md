@@ -1,6 +1,7 @@
 # How To Setup External Tables in ADX
 
 After data is in ADLS, external tables can be created to point to that data. 
+
 Microsoft documentation:
 * [What is ADX?](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
 * [External Table Overview](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/externaltables)

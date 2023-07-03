@@ -6,8 +6,14 @@ After data is in ADLS, external tables can be created to point to that data. ADX
    * [What is ADX](#What-is-ADX)
    * [What are External Tables?](#What-are-External-Tables)
    * [Why External Tables](#Why-External-Tables)
-   * [Pre-requisites](#Pre-requisites)
+   
 * [Setup](#Setup)
+  * [Pre-requisites](#Pre-requisites)
+  * [Information](#Information-to-Gather)
+  * [ADX Managed Identity](#ADX-Managed-Identity)
+  * [Infer Schema](#Infer-Schema)
+  * [Create External Table](#Create-External-Table)
+  * [Query External Table](#Query-External-Table)
 
   
 #### Microsoft documentation:
@@ -27,6 +33,8 @@ External tables are defined by a table name, schema, partitions, path format, da
 ### Why External Tables
 Tables in ADX are ingested and accessed through a compute frontend. This ties any interaction with that data to ADX compute. By using external tables we decouple storage and compute. This allows access to your data with your selection of compute resource, and only paying for compute when needed, dramatically lowering ingestion cost.
 
+## Setup
+
 ### Pre-requisites:
 * Logs in ADLS Gen 2 storage account in one of the ADX [supported formats](https://learn.microsoft.com/en-us/azure/data-explorer/ingestion-supported-formats) (preferrably parquet)
 * An ADX Cluster and Database [stood up](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free)
@@ -37,10 +45,8 @@ Tables in ADX are ingested and accessed through a compute frontend. This ties an
 * Storage account key (used once for inferring schema)
 * Container path format (ie: 2023-02-12/01/24: {yyyy}-{MM}-{dd}/{HH}/{mm})
 * Storage account owner (to grant ADX access to the Storage account)
-
-
-## Setup
-### Granting ADX Access to ADLS
+  
+### ADX Managed Identity
 ADX will be using a [managed identity to access ADLS](https://learn.microsoft.com/en-us/azure/data-explorer/external-tables-managed-identities?tabs=system-assigned%2Cazure-storage#1---configure-a-managed-identity-for-use-with-external-tables). In order to do this:
 1. Open the ADX database
 2. Run the following command to enable managed identity usage for external tables
@@ -56,7 +62,7 @@ ADX will be using a [managed identity to access ADLS](https://learn.microsoft.co
    * Storage Blob Data Reader
 
    
-### Inferring Log Schema
+### Infer Schema
 External tables in ADX require a schema. The schema defines the column names and their data types. Instead of manually extracting this information, we use the [infer_storage_schema plugin](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/inferstorageschemaplugin) in ADX to infer the schema. After doing so, review the results to ensure the schema is accurate.
 
 1. Open the ADX database
@@ -81,7 +87,7 @@ evaluate infer_storage_schema(options)
 <img width="1000" alt="image" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/01e5613b-a18e-45d7-a46a-9cd96b952c5d">
 <img width="500" alt="Schema Output" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/c31cebcd-29c2-4164-9a0a-5246c02798de">
 
-### Creating the External Table
+### Create External Table
 Now the external table can be created with the schema and managed identity. We are using a virtual column (IngestTime) to partition the table. This adds a new column to the logs that reads the datetime from the container format and optimizes filtering by that column. To learn more about partitioning read [here](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/external-tables-azurestorage-azuredatalake#partitions-formatting).
 1. Open the ADX database
 2. Run the following command
@@ -99,7 +105,7 @@ dataformat=<Log Format>
 <img width="1000" alt="image" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/9b0d3307-5d25-4244-951d-151171a48b2e">
 
 
-### Querying the External Table
+### Query External Table
 ```kql
 external_table("<External Table Name>")
  | where IngestTime between (ago(1h) .. now())

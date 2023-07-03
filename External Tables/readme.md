@@ -1,32 +1,36 @@
-# How To Setup External Tables in ADX
+# Accessing Data in ADLS
 
 After data is in ADLS, external tables can be created to point to that data. 
 
-Microsoft documentation:
+#### Microsoft documentation:
 * [What is ADX?](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
 * [External Table Overview](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/externaltables)
 * [Setup External Tables](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/external-tables-azurestorage-azuredatalake)
 
-Pre-requisites:
+## Intro
+
+### What is ADX?
+Azure Data Explorer (ADX) is a "fully managed, high-performance, big data analytics platform that makes it easy to analyze high volumes of data in near real time" [source](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview). ADX is used to access data in the data lake.
+
+### What is an External Table?
+External tables in ADX are pointers to data stored in Azure Storage or SQL Server tables. This is in contrast to regular tables which are hosted in ADX itself. 
+External tables are defined by a table name, schema, partitions, path format, data format, and connection string.
+
+
+### Why External Tables
+Tables in ADX are ingested and accessed through a compute frontend. This ties any interaction with that data to ADX compute. By using external tables we decouple storage and compute. This allows access to your data with your selection of compute resource, and only paying for compute when needed, dramatically lowering ingestion cost.
+
+### Pre-requisites:
 * Logs in ADLS Gen 2 storage account in one of the ADX [supported formats](https://learn.microsoft.com/en-us/azure/data-explorer/ingestion-supported-formats) (preferrably parquet)
 * An ADX Cluster and Database [stood up](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free)
 * Database Admin Permissions on the ADX database
 
-Information to Gather:
+### Information to Gather:
 * Storage account name
 * Storage account key (used once for inferring schema)
 * Container path format (ie: 2023-02-12/01/24 = {yyyy}-{MM}-{dd}/{HH}/{mm})
 * Storage account owner (to grant ADX access to the Storage account)
 
-## What is ADX?
-Azure Data Explorer (ADX) is a "fully managed, high-performance, big data analytics platform that makes it easy to analyze high volumes of data in near real time" [source](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview). ADX is used to access data in the data lake.
-
-## What is an External Table?
-External tables in ADX are pointers to data stored in Azure Storage or SQL Server tables. This is in contrast to regular tables which are hosted in ADX itself. 
-External tables are defined by a table name, schema, partitions, path format, data format, and connection string.
-
-## Why External Tables
-Tables in ADX are ingested and accessed through a compute frontend. This ties any interaction with that data to ADX compute. By using external tables we decouple storage and compute. This allows access to your data with your selection of compute resource, and only paying for compute when needed, dramatically lowering ingestion cost.
 
 ## Setup
 ### Granting ADX Access to ADLS

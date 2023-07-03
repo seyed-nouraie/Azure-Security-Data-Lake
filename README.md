@@ -56,7 +56,7 @@ The workbook is intended to be the one stop for monitoring trends, anomalies, an
 ### Deployment
 1. [Set up ADLS](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/ADLS)
 2. [Send Data to ADLS](https://github.com/seyed-nouraie/Azure-Data-Lake-ETL/tree/main/Nifi)
-3. [Create External Tables](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/External-Tables)
+3. [Create External Tables](https://github.com/seyed-nouraie/Azure-Security-Data-Lake/tree/main/External%20Tables)
 4. Deploy:
    
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fseyed-nouraie%2FAzure-Security-Data-Lake%2Fmain%2FDeploy%2Fazuredeploy.json)

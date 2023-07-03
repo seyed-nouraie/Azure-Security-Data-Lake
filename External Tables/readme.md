@@ -70,7 +70,7 @@ evaluate infer_storage_schema(options)
 4. Copy the value of the output
 
 #### Example:
-<img width="1000" alt="InferSchema" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/3451644c-8f3a-4815-a0fe-0ce882617266">
+<img width="1000" alt="image" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/01e5613b-a18e-45d7-a46a-9cd96b952c5d">
 <img width="500" alt="Schema Output" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/c31cebcd-29c2-4164-9a0a-5246c02798de">
 
 ### Creating the External Table
@@ -87,6 +87,9 @@ dataformat=<Log Format>
   h@'https://<Storage Account Name>.blob.core.windows.net/<Container>;managed_identity=system'
 )
 ```
+#### Example:
+<img width="1000" alt="image" src="https://github.com/seyed-nouraie/Azure-Security-Data-Lake/assets/75258742/9b0d3307-5d25-4244-951d-151171a48b2e">
+
 
 ### Querying the External Table
 ```kql

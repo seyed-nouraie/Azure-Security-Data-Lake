@@ -168,7 +168,10 @@
                     },
                     "runAfter": {
                         "Summary_-_Estimate_DeviceNetworkEvents_Size": [
-                            "Succeeded"
+                            "Succeeded",
+                            "SKIPPED",
+                            "TIMEDOUT",
+                            "FAILED"
                         ]
                     },
                     "type": "Until"
@@ -235,7 +238,10 @@
                     },
                     "runAfter": {
                         "Summary_-_Estimate_DeviceProcessEvents_Size": [
-                            "Succeeded"
+                            "Succeeded",
+                            "TIMEDOUT",
+                            "SKIPPED",
+                            "FAILED"
                         ]
                     },
                     "type": "Until"
@@ -305,7 +311,10 @@
                     },
                     "runAfter": {
                         "Summary_-_Original_Palo_Table_Size_Estimate": [
-                            "Succeeded"
+                            "Succeeded",
+                            "TIMEDOUT",
+                            "SKIPPED",
+                            "FAILED"
                         ]
                     },
                     "type": "Until"
@@ -442,7 +451,10 @@
                     },
                     "runAfter": {
                         "Inbound_Firewall_Traffic": [
-                            "Succeeded"
+                            "Succeeded",
+                            "TIMEDOUT",
+                            "SKIPPED",
+                            "FAILED"
                         ]
                     },
                     "type": "Until"
@@ -535,7 +547,10 @@
                     },
                     "runAfter": {
                         "DeviceProcess_Events": [
-                            "Succeeded"
+                            "Succeeded",
+                            "TIMEDOUT",
+                            "SKIPPED",
+                            "FAILED"
                         ]
                     },
                     "type": "ApiConnection"
@@ -601,7 +616,10 @@
                     },
                     "runAfter": {
                         "DeviceNetworkEvents": [
-                            "Succeeded"
+                            "Succeeded",
+                            "TIMEDOUT",
+                            "SKIPPED",
+                            "FAILED"
                         ]
                     },
                     "type": "ApiConnection"

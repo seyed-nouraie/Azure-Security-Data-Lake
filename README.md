@@ -60,6 +60,7 @@ The workbook is intended to be the one stop for monitoring trends, anomalies, an
 4. Deploy:
    
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fseyed-nouraie%2FAzure-Security-Data-Lake%2Fmain%2FDeploy%2Fazuredeploy.json)
+
 5. Grant the two Logic Apps Created Access viewer permission on the ADX Database
 
 

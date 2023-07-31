@@ -37,7 +37,7 @@ Tables in ADX are ingested and accessed through a compute frontend. This ties an
 
 ### Pre-requisites:
 * Logs in ADLS Gen 2 storage account in one of the ADX [supported formats](https://learn.microsoft.com/en-us/azure/data-explorer/ingestion-supported-formats) (preferrably parquet)
-* An ADX Cluster and Database [stood up](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free)
+* An ADX Cluster and Database [stood up](https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=full) (use the full deployment in Azure)
 * A Database with Name adxdata001
 * Admin Permissions on the ADX Cluster
 

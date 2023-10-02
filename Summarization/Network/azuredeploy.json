@@ -529,7 +529,7 @@
                     "inputs": {
                         "body": {
                             "cluster": "[parameters('ADXClusterURI')]",
-                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('DeviceNetworkEvents')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 + 1h\n| extend table = \"DeviceNetworkEvents\"",
+                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('DeviceNetworkEvents')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 \n| extend table = \"DeviceNetworkEvents\"",
                             "db": "adxdata001"
                         },
                         "host": {
@@ -559,7 +559,7 @@
                     "inputs": {
                         "body": {
                             "cluster": "[parameters('ADXClusterURI')]",
-                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('DeviceProcessEvents')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 + 1h\n| extend table = \"DeviceProcessEvents\"",
+                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('DeviceProcessEvents')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 \n| extend table = \"DeviceProcessEvents\"",
                             "db": "adxdata001"
                         },
                         "host": {
@@ -598,7 +598,7 @@
                     "inputs": {
                         "body": {
                             "cluster": "[parameters('ADXClusterURI')]",
-                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| take 1000000000000000000\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 + 1h\n| extend table = \"Firewall Traffic\"",
+                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| take 1000000000000000000\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 \n| extend table = \"Firewall Traffic\"",
                             "db": "adxdata001"
                         },
                         "host": {

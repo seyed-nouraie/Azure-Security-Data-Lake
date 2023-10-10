@@ -1,7 +1,7 @@
 # Network Summarization Logic Apps
 
 This sample logic app summarizes data from the data lake and sends it to custom tables in Sentinel. The logic app requires data in the lake along with external tables in an ADX cluster.  
-Below we break down the compontents of the logic app.
+Below we break down the compontents of the logic app. It is important to note that the queries may be different from your environment due to variations in logging sources. Make sure the query logic aligns with the naming in your environment (field names, table names).
 
 ### Contents
 * [Trigger and Variables](#Trigger-and-Variables)

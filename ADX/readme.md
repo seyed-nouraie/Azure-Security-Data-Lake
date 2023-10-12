@@ -1,5 +1,6 @@
 # Using ADX to Access ADLS Data
 [YouTube Demo](https://youtu.be/iWL71yyAbAs)
+
 After data is in ADLS, external tables can be created to point to that data. ADX will be used to query the data lake and return extracted security value back to Sentinel.
 
 ### Components

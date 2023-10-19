@@ -1,7 +1,7 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
       "PlaybookName": {
         "type": "string",
         "defaultValue": "DataLake-Summarize-Network",
@@ -33,13 +33,13 @@
         "metadata": {
             "description": "Your ADX Database Name"
           }
-    }
+      }
     },
-    "variables": {
+  "variables": {
         "AzureSentinelConnectionName": "[concat('azuresentinel-', parameters('PlaybookName'))]",
         "ADXConnectionName": "[concat('azuredataexplorer-', parameters('PlaybookName'))]"
-    },
-    "resources": [
+  },
+  "resources": [
           {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
@@ -72,562 +72,281 @@
                 }
             }
         },
-      {
-        "type": "Microsoft.Logic/workflows",
-        "apiVersion": "2019-05-01",
-        "name": "[parameters('PlaybookName')]",
-        "location": "[resourceGroup().location]",
-        "dependsOn": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[parameters('PlaybookName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
           "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
           "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]"
-        ],
-        "properties": {
-          "definition": {
-            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-              "$connections": {
-                "defaultValue": {},
-                "type": "Object"
-              }
-            },
-            "triggers": {
-              "Recurrence": {
-                "recurrence": {
-                  "frequency": "Hour",
-                  "interval": 1
-                },
-                "type": "Recurrence"
-              }
-            },
-            "actions": {
-                "DeviceNetworkEvents": {
-                    "actions": {
-                        "Increment_DeviceNetworkEvents_Row": {
-                            "inputs": {
-                                "name": "DeviceNetworkEvents_Row",
-                                "value": 30000
-                            },
-                            "runAfter": {
-                                "Send_Data_6": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "IncrementVariable"
-                        },
-                        "Send_Data_6": {
-                            "inputs": {
-                                "body": "@{body('Summary_-_DeviceNetworkEvents')?['value']}",
-                                "headers": {
-                                    "Log-Type": "SummariesDeviceNetworkEvents_CL",
-                                    "time-generated-field": "endtime"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/api/logs"
-                            },
-                            "runAfter": {
-                                "Summary_-_DeviceNetworkEvents": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "ApiConnection"
-                        },
-                        "Summary_-_DeviceNetworkEvents": {
-                            "inputs": {
-                                "body": {
-                                    "cluster": "[parameters('ADXClusterURI')]",
-                                    "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nlet pastrow = @{variables('DeviceNetworkEvents_Row')}-30001;\nlet currrow = @{variables('DeviceNetworkEvents_Row')};\nexternal_table('DeviceNetworkEvents')\n| where IngestTime >= starttime and IngestTime < endtime and isnotempty(tostring(properties.RemoteIP))\n| summarize TotalSeen = count() , Users=make_set(properties.InitiatingProcessAccountName), DevicesSeen = count_distinct(tostring(properties.DeviceId)), TopDevices=make_set(tostring(properties.DeviceName), 5), URLs = make_set_if(tostring(properties.RemoteUrl), isnotempty(tostring(properties.RemoteUrl))), Processes_SHA1 = make_set_if(tostring(properties.InitiatingProcessSHA1), isnotempty(tostring(properties.InitiatingProcessSHA1))),  Actions = make_set(tostring(properties.ActionType)) by RemoteIP = tostring(properties.RemoteIP), bin(['time'], 1h)\n| extend type = \"InitatingProcess\"\n| sort by RemoteIP, ['time']\n| serialize rn = row_number()\n| where rn >= pastrow and rn <currrow\n| project-away rn\n| extend endtime= ['time'] + 1h",
-                                    "db": "adxdata001"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/ListKustoResults/false",
-                                "retryPolicy": {
-                                    "count": 10,
-                                    "interval": "PT20S",
-                                    "type": "fixed"
-                                }
-                            },
-                            "runAfter": {},
-                            "type": "ApiConnection"
-                        }
-                    },
-                    "expression": "@lessOrEquals(length(body('Summary_-_DeviceNetworkEvents')?['value']), 0)",
-                    "limit": {
-                        "count": 60,
-                        "timeout": "PT1H"
-                    },
-                    "runAfter": {
-                        "Summary_-_Estimate_DeviceNetworkEvents_Size": [
-                            "Succeeded",
-                            "SKIPPED",
-                            "TIMEDOUT",
-                            "FAILED"
-                        ]
-                    },
-                    "type": "Until"
-                },
-                "DeviceProcess_Events": {
-                    "actions": {
-                        "Increment_DeviceProcessEvents_Row": {
-                            "inputs": {
-                                "name": "DeviceProcessEvents_Row",
-                                "value": 30000
-                            },
-                            "runAfter": {
-                                "Send_Data_8": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "IncrementVariable"
-                        },
-                        "Send_Data_8": {
-                            "inputs": {
-                                "body": "@{body('Summary_-_DeviceProcessEvents')?['value']}",
-                                "headers": {
-                                    "Log-Type": "SummariesDeviceProcessEvents_CL",
-                                    "time-generated-field": "endtime"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/api/logs"
-                            },
-                            "runAfter": {
-                                "Summary_-_DeviceProcessEvents": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "ApiConnection"
-                        },
-                        "Summary_-_DeviceProcessEvents": {
-                            "inputs": {
-                                "body": {
-                                    "cluster": "[parameters('ADXClusterURI')]",
-                                    "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nlet pastrow = @{variables('DeviceProcessEvents_Row')}-30000;\nlet currrow = @{variables('DeviceProcessEvents_Row')};\nlet processes = external_table('DeviceProcessEvents')\n| where IngestTime >= starttime and IngestTime < endtime and isnotempty(properties.SHA1)\n| summarize TotalSeen=count(), Users=make_set_if(tostring(properties.AccountName),isnotempty(tostring(properties.AccountName))), DevicesSeen=count_distinct(tostring(properties.DeviceId)), TopDevices=make_set(tostring(properties.DeviceName), 5) by FileName = tostring(properties.FileName), FileSize = tostring(properties.FileSize), SHA1 = tostring(properties.SHA1)\n| extend type = \"Process\";\nexternal_table('DeviceProcessEvents')\n| where IngestTime >= starttime and IngestTime < endtime and isnotempty(properties.SHA1) and isempty(properties.FileName)\n| where isnotempty(tostring(properties.InitiatingProcessSHA1))\n| summarize DevicesSeen=count_distinct(tostring(properties.DeviceId)), Users=make_set_if(tostring(properties.AccountName),isnotempty(tostring(properties.AccountName))), TotalSeen=count() by SHA1 = tostring(properties.InitiatingProcessSHA1), FileSize = tostring(properties.InitiatingProcessFileSize), FileName = tostring(properties.InitiatingProcessFileName), bin(['time'], 1h)\n| extend type = \"InitatingProcess\"\n| union processes\n| sort by SHA1, FileSize, FileName, ['time']\n| serialize rn = row_number()\n| where rn >= pastrow and rn <currrow\n| project-away rn\n| extend endtime= ['time'] + 1h",
-                                    "db": "adxdata001"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/ListKustoResults/false"
-                            },
-                            "runAfter": {},
-                            "type": "ApiConnection"
-                        }
-                    },
-                    "expression": "@lessOrEquals(length(body('Summary_-_DeviceProcessEvents')?['value']), 0)",
-                    "limit": {
-                        "count": 60,
-                        "timeout": "PT1H"
-                    },
-                    "runAfter": {
-                        "Summary_-_Estimate_DeviceProcessEvents_Size": [
-                            "Succeeded",
-                            "TIMEDOUT",
-                            "SKIPPED",
-                            "FAILED"
-                        ]
-                    },
-                    "type": "Until"
-                },
-                "Inbound_Firewall_Traffic": {
-                    "actions": {
-                        "Increment_InboundFirewall_Row": {
-                            "inputs": {
-                                "name": "InboundFirewall_Row",
-                                "value": 30000
-                            },
-                            "runAfter": {
-                                "Send_Data_2": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "IncrementVariable"
-                        },
-                        "Send_Data_2": {
-                            "inputs": {
-                                "body": "@{body('Summary_-_Inbound_Firewall_Traffic')?['value']}",
-                                "headers": {
-                                    "Log-Type": "SummariesNetworkInbound_CL",
-                                    "time-generated-field": "endtime"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/api/logs"
-                            },
-                            "runAfter": {
-                                "Summary_-_Inbound_Firewall_Traffic": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "ApiConnection"
-                        },
-                        "Summary_-_Inbound_Firewall_Traffic": {
-                            "inputs": {
-                                "body": {
-                                    "cluster": "[parameters('ADXClusterURI')]",
-                                    "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nlet pastrow = @{variables('InboundFirewall_Row')}-30001;\nlet currrow = @{variables('InboundFirewall_Row')};\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(srcip),\n    RemotePortsCount=count_distinct(SourcePort),\n    LocalPortsCount=count_distinct(DestinationPort),\n    OutBytes = sum(total_in),\n    InBytes = sum(total_out) by dstip, SimplifiedDeviceAction, bin(rt, 1h)\n| sort by dstip, SimplifiedDeviceAction, rt\n| serialize rn = row_number()\n| where rn >= pastrow and rn <currrow\n| project-away rn\n| extend direction=\"In\", endtime=rt +1h \n| project-rename IP=dstip",
-                                    "db": "adxdata001"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/ListKustoResults/false",
-                                "retryPolicy": {
-                                    "type": "none"
-                                }
-                            },
-                            "runAfter": {},
-                            "type": "ApiConnection"
-                        }
-                    },
-                    "expression": "@lessOrEquals(length(body('Summary_-_Inbound_Firewall_Traffic')?['value']), 0)",
-                    "limit": {
-                        "count": 60,
-                        "timeout": "PT1H"
-                    },
-                    "runAfter": {
-                        "Summary_-_Original_Palo_Table_Size_Estimate": [
-                            "Succeeded",
-                            "TIMEDOUT",
-                            "SKIPPED",
-                            "FAILED"
-                        ]
-                    },
-                    "type": "Until"
-                },
-                "Initialize_Current_Time": {
-                    "inputs": {
-                        "variables": [
-                            {
-                                "name": "currtime",
-                                "type": "string",
-                                "value": "datetime(\"@{utcNow()}\")"
-                            }
-                        ]
-                    },
-                    "runAfter": {},
-                    "type": "InitializeVariable"
-                },
-                "Initialize_DeviceNetworkEvents_Row": {
-                    "inputs": {
-                        "variables": [
-                            {
-                                "name": "DeviceNetworkEvents_Row",
-                                "type": "integer",
-                                "value": 30000
-                            }
-                        ]
-                    },
-                    "runAfter": {},
-                    "type": "InitializeVariable"
-                },
-                "Initialize_DeviceProcessEvents_Row": {
-                    "inputs": {
-                        "variables": [
-                            {
-                                "name": "DeviceProcessEvents_Row",
-                                "type": "integer",
-                                "value": 30000
-                            }
-                        ]
-                    },
-                    "runAfter": {},
-                    "type": "InitializeVariable"
-                },
-                "Initialize_InboundFirewall_Row": {
-                    "inputs": {
-                        "variables": [
-                            {
-                                "name": "InboundFirewall_Row",
-                                "type": "integer",
-                                "value": 30000
-                            }
-                        ]
-                    },
-                    "runAfter": {},
-                    "type": "InitializeVariable"
-                },
-                "Initialize_OutboundFirewall_Row": {
-                    "inputs": {
-                        "variables": [
-                            {
-                                "name": "OutboundFirewall_Row",
-                                "type": "integer",
-                                "value": 30000
-                            }
-                        ]
-                    },
-                    "runAfter": {},
-                    "type": "InitializeVariable"
-                },
-                "Outbound_Firewall_Traffic": {
-                    "actions": {
-                        "Increment_OutboundFirewall_Row": {
-                            "inputs": {
-                                "name": "OutboundFirewall_Row",
-                                "value": 30000
-                            },
-                            "runAfter": {
-                                "Send_Data": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "IncrementVariable"
-                        },
-                        "Send_Data": {
-                            "inputs": {
-                                "body": "@{body('Summary_-_Outbound_Firewall_Traffic')?['value']}",
-                                "headers": {
-                                    "Log-Type": "SummariesNetworkOutbound_CL",
-                                    "time-generated-field": "endtime"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/api/logs"
-                            },
-                            "runAfter": {
-                                "Summary_-_Outbound_Firewall_Traffic": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "ApiConnection"
-                        },
-                        "Summary_-_Outbound_Firewall_Traffic": {
-                            "inputs": {
-                                "body": {
-                                    "cluster": "[parameters('ADXClusterURI')]",
-                                    "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nlet pastrow = @{variables('OutboundFirewall_Row')}-30001;\nlet currrow = @{variables('OutboundFirewall_Row')};\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(dstip),\n    RemotePortsCount=count_distinct(DestinationPort),\n    LocalPortsCount=count_distinct(SourcePort),\n    OutBytes = sum(total_out),\n    InBytes = sum(total_in) by srcip, SimplifiedDeviceAction, bin(rt, 1h)\n| sort by srcip, SimplifiedDeviceAction, rt\n| serialize rn = row_number()\n| where rn >= pastrow and rn <currrow\n| project-away rn\n| extend direction=\"Out\", endtime=rt + 1h\n| project-rename IP=srcip",
-                                    "db": "adxdata001"
-                                },
-                                "host": {
-                                    "connection": {
-                                        "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                                    }
-                                },
-                                "method": "post",
-                                "path": "/ListKustoResults/false",
-                                "retryPolicy": {
-                                    "count": 10,
-                                    "interval": "PT20S",
-                                    "type": "fixed"
-                                }
-                            },
-                            "runAfter": {},
-                            "type": "ApiConnection"
-                        }
-                    },
-                    "expression": "@lessOrEquals(length(body('Summary_-_Outbound_Firewall_Traffic')?['value']), 0)",
-                    "limit": {
-                        "count": 60,
-                        "timeout": "PT1H"
-                    },
-                    "runAfter": {
-                        "Inbound_Firewall_Traffic": [
-                            "Succeeded",
-                            "TIMEDOUT",
-                            "SKIPPED",
-                            "FAILED"
-                        ]
-                    },
-                    "type": "Until"
-                },
-                "Send_Data_3": {
-                    "inputs": {
-                        "body": "@{body('Summary_-_Original_Palo_Table_Size_Estimate')?['value']}",
-                        "headers": {
-                            "Log-Type": "SummariesOriginalTableSizeEstimates",
-                            "time-generated-field": "endtime"
-                        },
-                        "host": {
-                            "connection": {
-                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                            }
-                        },
-                        "method": "post",
-                        "path": "/api/logs"
-                    },
-                    "runAfter": {
-                        "Summary_-_Original_Palo_Table_Size_Estimate": [
-                            "Succeeded"
-                        ]
-                    },
-                    "type": "ApiConnection"
-                },
-                "Send_Data_5": {
-                    "inputs": {
-                        "body": "@{body('Summary_-_Estimate_DeviceProcessEvents_Size')?['value']}",
-                        "headers": {
-                            "Log-Type": "SummariesOriginalTableSizeEstimates",
-                            "time-generated-field": "endtime"
-                        },
-                        "host": {
-                            "connection": {
-                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                            }
-                        },
-                        "method": "post",
-                        "path": "/api/logs"
-                    },
-                    "runAfter": {
-                        "Summary_-_Estimate_DeviceProcessEvents_Size": [
-                            "Succeeded"
-                        ]
-                    },
-                    "type": "ApiConnection"
-                },
-                "Send_Data_7": {
-                    "inputs": {
-                        "body": "@{body('Summary_-_Estimate_DeviceNetworkEvents_Size')?['value']}",
-                        "headers": {
-                            "Log-Type": "SummariesOriginalTableSizeEstimates",
-                            "time-generated-field": "endtime"
-                        },
-                        "host": {
-                            "connection": {
-                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                            }
-                        },
-                        "method": "post",
-                        "path": "/api/logs"
-                    },
-                    "runAfter": {
-                        "Summary_-_Estimate_DeviceNetworkEvents_Size": [
-                            "Succeeded"
-                        ]
-                    },
-                    "type": "ApiConnection"
-                },
-                "Summary_-_Estimate_DeviceNetworkEvents_Size": {
-                    "inputs": {
-                        "body": {
-                            "cluster": "[parameters('ADXClusterURI')]",
-                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('DeviceNetworkEvents')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 \n| extend table = \"DeviceNetworkEvents\"",
-                            "db": "adxdata001"
-                        },
-                        "host": {
-                            "connection": {
-                                "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                            }
-                        },
-                        "method": "post",
-                        "path": "/ListKustoResults/false",
-                        "retryPolicy": {
-                            "count": 10,
-                            "interval": "PT20S",
-                            "type": "fixed"
-                        }
-                    },
-                    "runAfter": {
-                        "DeviceProcess_Events": [
-                            "Succeeded",
-                            "TIMEDOUT",
-                            "SKIPPED",
-                            "FAILED"
-                        ]
-                    },
-                    "type": "ApiConnection"
-                },
-                "Summary_-_Estimate_DeviceProcessEvents_Size": {
-                    "inputs": {
-                        "body": {
-                            "cluster": "[parameters('ADXClusterURI')]",
-                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('DeviceProcessEvents')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 \n| extend table = \"DeviceProcessEvents\"",
-                            "db": "adxdata001"
-                        },
-                        "host": {
-                            "connection": {
-                                "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                            }
-                        },
-                        "method": "post",
-                        "path": "/ListKustoResults/false",
-                        "retryPolicy": {
-                            "count": 10,
-                            "interval": "PT20S",
-                            "type": "fixed"
-                        }
-                    },
-                    "runAfter": {
-                        "Initialize_Current_Time": [
-                            "Succeeded"
-                        ],
-                        "Initialize_DeviceNetworkEvents_Row": [
-                            "Succeeded"
-                        ],
-                        "Initialize_DeviceProcessEvents_Row": [
-                            "Succeeded"
-                        ],
-                        "Initialize_InboundFirewall_Row": [
-                            "Succeeded"
-                        ],
-                        "Initialize_OutboundFirewall_Row": [
-                            "Succeeded"
-                        ]
-                    },
-                    "type": "ApiConnection"
-                },
-                "Summary_-_Original_Palo_Table_Size_Estimate": {
-                    "inputs": {
-                        "body": {
-                            "cluster": "[parameters('ADXClusterURI')]",
-                            "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| take 1000000000000000000\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1 \n| extend table = \"Firewall Traffic\"",
-                            "db": "adxdata001"
-                        },
-                        "host": {
-                            "connection": {
-                                "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
-                            }
-                        },
-                        "method": "post",
-                        "path": "/ListKustoResults/false",
-                        "retryPolicy": {
-                            "count": 10,
-                            "interval": "PT20S",
-                            "type": "fixed"
-                        }
-                    },
-                    "runAfter": {
-                        "DeviceNetworkEvents": [
-                            "Succeeded",
-                            "TIMEDOUT",
-                            "SKIPPED",
-                            "FAILED"
-                        ]
-                    },
-                    "type": "ApiConnection"
-                }
-            },
-            "outputs": {}
-          },
+      ],
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
           "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "Recurrence": {
+              "recurrence": {
+                "frequency": "Hour",
+                "interval": 1
+              },
+              "type": "Recurrence"
+            }
+          },
+          "actions": {
+            "Inbound_Firewall_Traffic": {
+              "actions": {
+                "Increment_InboundFirewall_Row": {
+                  "runAfter": {
+                    "Send_Data_2": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "InboundFirewall_Row",
+                    "value": 30000
+                  }
+                },
+                "Send_Data_2": {
+                  "runAfter": {
+                    "Summary_-_Inbound_Firewall_Traffic": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": "@{body('Summary_-_Inbound_Firewall_Traffic')?['value']}",
+                    "headers": {
+                      "Log-Type": "SummariesNetworkInbound_CL",
+                      "time-generated-field": "endtime"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/api/logs"
+                  }
+                },
+                "Summary_-_Inbound_Firewall_Traffic": {
+                  "runAfter": {},
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": {
+                      "cluster": "[parameters('ADXClusterURI')]",
+                      "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nlet pastrow = @{variables('InboundFirewall_Row')}-30000;\nlet currrow = @{variables('InboundFirewall_Row')};\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(SourceIP),\n    RemotePortsCount=count_distinct(SourcePort),\n    LocalPortsCount=count_distinct(DestinationPort),\n    OutBytes = sum(SentBytes),\n    InBytes = sum(ReceivedBytes) by DestinationIP, DeviceAction, bin(TimeGenerated, 1h)\n| sort by DestinationIP, DeviceAction, TimeGenerated\n| serialize rn = row_number()\n| where rn > pastrow and rn <=currrow\n| extend direction=\"In\", endtime=TimeGenerated + 1h\n| project-away rn\n| project-rename IP=DestinationIP",
+                      "db": "[parameters('ADXDatabaseName')]"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/ListKustoResults/false",
+                    "retryPolicy": {
+                      "type": "none"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Summary_-_Original_Palo_Table_Size_Estimate": [
+                  "Succeeded",
+                  "TimedOut",
+                  "Skipped",
+                  "Failed"
+                ]
+              },
+              "expression": "@lessOrEquals(length(body('Summary_-_Inbound_Firewall_Traffic')?['value']), 0)",
+              "limit": {
+                "count": 60,
+                "timeout": "PT1H"
+              },
+              "type": "Until"
+            },
+            "Initialize_Current_Time": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "currtime",
+                    "type": "string",
+                    "value": "datetime(\"@{utcNow()}\")"
+                  }
+                ]
+              }
+            },
+            "Initialize_InboundFirewall_Row": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "InboundFirewall_Row",
+                    "type": "integer",
+                    "value": 30000
+                  }
+                ]
+              }
+            },
+            "Initialize_OutboundFirewall_Row": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "OutboundFirewall_Row",
+                    "type": "integer",
+                    "value": 30000
+                  }
+                ]
+              }
+            },
+            "Outbound_Firewall_Traffic": {
+              "actions": {
+                "Increment_OutboundFirewall_Row": {
+                  "runAfter": {
+                    "Send_Data": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "OutboundFirewall_Row",
+                    "value": 30000
+                  }
+                },
+                "Send_Data": {
+                  "runAfter": {
+                    "Summary_-_Outbound_Firewall_Traffic": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": "@{body('Summary_-_Outbound_Firewall_Traffic')?['value']}",
+                    "headers": {
+                      "Log-Type": "SummariesNetworkOutbound_CL",
+                      "time-generated-field": "endtime"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/api/logs"
+                  }
+                },
+                "Summary_-_Outbound_Firewall_Traffic": {
+                  "runAfter": {},
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": {
+                      "cluster": "[parameters('ADXClusterURI')]",
+                      "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nlet pastrow = @{variables('OutboundFirewall_Row')}-30000;\nlet currrow = @{variables('OutboundFirewall_Row')};\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| summarize ConnectionsCount=count(),\n    RemoteIPCount = count_distinct(DestinationIP),\n    RemotePortsCount=count_distinct(DestinationPort),\n    LocalPortsCount=count_distinct(SourcePort),\n    OutBytes = sum(SentBytes),\n    InBytes = sum(ReceivedBytes) by SourceIP, DeviceAction, bin(TimeGenerated, 1h)\n| sort by SourceIP, DeviceAction, TimeGenerated\n| serialize rn = row_number()\n| where rn > pastrow and rn <= currrow\n| extend direction=\"Out\", endtime=TimeGenerated+1h\n| project-away rn\n| project-rename IP=SourceIP",
+                      "db": "[parameters('ADXDatabaseName')]"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/ListKustoResults/false",
+                    "retryPolicy": {
+                      "count": 10,
+                      "interval": "PT20S",
+                      "type": "fixed"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Inbound_Firewall_Traffic": [
+                  "Succeeded",
+                  "TimedOut",
+                  "Skipped",
+                  "Failed"
+                ]
+              },
+              "expression": "@lessOrEquals(length(body('Summary_-_Outbound_Firewall_Traffic')?['value']), 0)",
+              "limit": {
+                "count": 60,
+                "timeout": "PT1H"
+              },
+              "type": "Until"
+            },
+            "Send_Data_3": {
+              "runAfter": {
+                "Summary_-_Original_Palo_Table_Size_Estimate": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "body": "@{body('Summary_-_Original_Palo_Table_Size_Estimate')?['value']}",
+                "headers": {
+                  "Log-Type": "SummariesOriginalTableSizeEstimates",
+                  "time-generated-field": "endtime"
+                },
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/api/logs"
+              }
+            },
+            "Summary_-_Original_Palo_Table_Size_Estimate": {
+              "runAfter": {
+                "Initialize_Current_Time": [
+                  "Succeeded"
+                ],
+                "Initialize_InboundFirewall_Row": [
+                  "Succeeded"
+                ],
+                "Initialize_OutboundFirewall_Row": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "body": {
+                  "cluster": "[parameters('ADXClusterURI')]",
+                  "csl": "let starttime = bin((@{variables('currtime')}-1h), 1h);\nlet endtime = bin(@{variables('currtime')}, 1h);\nexternal_table('paloaltotraffic')\n| where IngestTime >= starttime and IngestTime < endtime\n| take 1000000000000000000\n| summarize total = sum(estimate_data_size(*)) by endtime\n| project-rename endtime= Column1\n| extend table = \"Firewall Traffic\"",
+                  "db": "[parameters('ADXDatabaseName')]"
+                },
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azuredataexplorer']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/ListKustoResults/false",
+                "retryPolicy": {
+                  "count": 10,
+                  "interval": "PT20S",
+                  "type": "fixed"
+                }
+              }
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
             "$connections": {
               "value": {
                 "azuresentinel": {
@@ -647,12 +366,12 @@
                 }
               }
             }
-          }
-        },
-        "identity": {
-          "type": "SystemAssigned"
         }
+      },
+      "identity": {
+        "type": "SystemAssigned"
       }
-    ],
-    "outputs": {}
-  }
+    }
+  ],
+  "outputs": {}
+}

@@ -16,7 +16,7 @@
         }
       },
       "ADXDatabaseName":{
-        "defaultValue": "adxdata001",
+        "defaultValue": "DBadxdata001",
         "type": "string",
         "metadata": {
             "description": "Your ADX Database Name"

@@ -36,10 +36,9 @@
         }
      },
     "variables": {
-        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Summarization/Network/azuredeploy.json')]",
-        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Enrichment/Network/azuredeploy.json')]",
-        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Functions/azuredeploy.json')]",
-        "WorkbookTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Workbooks/azuredeploy.json')]"
+        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/criblformat/Summarization/Network/azuredeploy.json')]",
+        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/criblformat/Enrichment/Network/azuredeploy.json')]",
+        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/criblformat/Functions/azuredeploy.json')]"
     },
     "resources": [
         {
@@ -105,25 +104,5 @@
                 }
             }
         },
-        {
-            "apiVersion": "2019-10-01",
-            "name": "SummaryWorkbooksTemplate",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('WorkbookTemplate')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "ADXClusterURI": {
-                        "value": "[parameters('ADXClusterURI')]"
-                    },
-                    "sentinelWorkspace": {
-                        "value": "[parameters('SentinelWorkspaceName')]"
-                    }
-                }
-            }
-        }
     ]
  }

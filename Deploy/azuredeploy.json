@@ -36,9 +36,9 @@
         }
      },
     "variables": {
-        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/criblformat/Summarization/Network/azuredeploy.json')]",
-        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/criblformat/Enrichment/Network/azuredeploy.json')]",
-        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/criblformat/Functions/azuredeploy.json')]"
+        "NetworkSummariesTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Summarization/Network/azuredeploy.json')]",
+        "NetworkEnrichmentTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Enrichment/Network/azuredeploy.json')]",
+        "FunctionsTemplate": "[concat('https://raw.githubusercontent.com/seyed-nouraie/Azure-Security-Data-Lake/main/Functions/azuredeploy.json')]"
     },
     "resources": [
         {
@@ -103,6 +103,6 @@
                     }
                 }
             }
-        },
+        }
     ]
  }

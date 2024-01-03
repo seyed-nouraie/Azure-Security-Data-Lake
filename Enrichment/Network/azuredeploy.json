@@ -1,33 +1,122 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-      "PlaybookName": {
-        "type": "string",
-        "defaultValue": "DataLake-Enrichment-Network",
-        "metadata": {
-          "description": "Name of the Logic App."
-        }
-      },
-      "ADXClusterURI":{
-        "type":"string",
-        "metadata":{
-          "description": "URL of the ADX Cluster"
-        }
-      },
-      "ADXDatabaseName":{
-        "defaultValue": "adxdata001",
-        "type": "string",
-        "metadata": {
-            "description": "Your ADX Database Name"
-          }
-    }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "PlaybookName": {
+      "type": "string",
+      "defaultValue": "DataLake-Enrich-Network",
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
     },
-    "variables": {
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "asia",
+        "asiapacific",
+        "australia",
+        "australiacentral",
+        "australiacentral2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazil",
+        "brazilsouth",
+        "brazilsoutheast",
+        "canada",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "centraluseuap",
+        "centralusstage",
+        "chinaeast",
+        "chinanorth",
+        "eastasia",
+        "eastasiastage",
+        "eastus",
+        "eastus2",
+        "eastus2euap",
+        "eastus2stage",
+        "eastusstage",
+        "europe",
+        "francecentral",
+        "francesouth",
+        "germanycentral",
+        "germanynorth",
+        "germanynortheast",
+        "germanywestcentral",
+        "global",
+        "india",
+        "japan",
+        "japaneast",
+        "japanwest",
+        "jioindiawest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northcentralusstage",
+        "northeurope",
+        "norwayeast",
+        "norwaywest",
+        "southafricanorth",
+        "southafricawest",
+        "southcentralus",
+        "southcentralusstage",
+        "southeastasia",
+        "southeastasiastage",
+        "southindia",
+        "switzerland",
+        "switzerlandnorth",
+        "switzerlandwest",
+        "uaecentral",
+        "uaenorth",
+        "uk",
+        "uksouth",
+        "ukwest",
+        "unitedstates",
+        "usdodeast",
+        "usdodwest",
+        "usgovarizona",
+        "usgoviowa",
+        "usgovtexas",
+        "usgovvirginia",
+        "usseceast",
+        "ussecwest",
+        "west",
+        "westcentralus",
+        "westeurope",
+        "westindia",
+        "westus",
+        "westus2",
+        "westus2stage",
+        "westus3",
+        "westusstage"
+      ],
+      "metadata": {
+        "description": "Location of the Logic App."
+      }
+    },
+    "ADXClusterURI":{
+      "type":"string",
+      "metadata":{
+         "description": "URL of the ADX Cluster"
+        }
+    },
+    "ADXDatabaseName":{
+      "defaultValue": "adxdata001",
+        "type": "string",
+        "metadata": {
+         "description": "Your ADX Database Name"
+        }
+    }
+  },
+  "variables": {
         "AzureSentinelConnectionName": "[concat('azuresentinel-', parameters('PlaybookName'))]",
         "ADXConnectionName": "[concat('azuredataexplorer-', parameters('PlaybookName'))]"
-    },
-    "resources": [
+  },
+  "resources": [
         {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
@@ -58,81 +147,199 @@
                 }
             }
         },
-      {
-        "type": "Microsoft.Logic/workflows",
-        "apiVersion": "2019-05-01",
-        "name": "[parameters('PlaybookName')]",
-        "location": "[resourceGroup().location]",
-        "dependsOn": [
-          "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
-          "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]"
-        ],
-        "properties": {
-          "definition": {
-            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-              "$connections": {
-                "defaultValue": {},
-                "type": "Object"
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[parameters('PlaybookName')]",
+      "location": "[parameters('logicAppLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
+        "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]",
+      ],
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "Microsoft_Sentinel_incident": {
+              "type": "ApiConnectionWebhook",
+              "inputs": {
+                "body": {
+                  "callback_url": "@{listCallbackUrl()}"
+                },
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                  }
+                },
+                "path": "/incident-creation"
+              }
+            }
+          },
+          "actions": {
+            "Convert_Array_to_String": {
+              "runAfter": {
+                "Fill_IP_Array": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose",
+              "inputs": "@string(variables('IPList'))"
+            },
+            "Enrichment_Query_-_TI_Destination": {
+              "runAfter": {
+                "Enrichment_Query_-_TI_Source": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "body": {
+                  "cluster": "https://adxcompc1001.centralus.kusto.windows.net",
+                  "csl": "external_table('paloaltotraffic')\n| where IngestTime >= ago(3h) and IngestTime < now()\n| where DestinationIP in (@{outputs('Remove_Brackets')}) \n| summarize outbound_bytes = sum(SentBytes), inbound_bytes = sum(ReceivedBytes), events= count(), srcIPs= make_set(src, 10), make_set(SourcePort,10), make_set(ApplicationProtocol,10) by DestinationIP, DestinationPort, DeviceAction\n| take 20",
+                  "db": "adxdata001"
+                },
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['kusto']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/ListKustoResults/false"
               }
             },
-            "triggers": {
-              "Microsoft_Sentinel_incident": {
-                "type": "ApiConnectionWebhook",
-                "inputs": {
-                  "body": {
-                    "callback_url": "@{listCallbackUrl()}"
-                  },
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "path": "/incident-creation"
-                }
+            "Enrichment_Query_-_TI_Source": {
+              "runAfter": {
+                "Remove_Brackets": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "body": {
+                  "cluster": "https://adxcompc1001.centralus.kusto.windows.net",
+                  "csl": "external_table('paloaltotraffic')\n| where IngestTime >= ago(3h) and IngestTime < now()\n| where SourceIP in (@{outputs('Remove_Brackets')}) \n| summarize outbound_bytes = sum(SentBytes), inbound_bytes = sum(ReceivedBytes),  events= count(), destIPs = make_set(DestinationIP, 10), make_set(DestinationPort,10), make_set(ApplicationProtocol,10) by SourceIP, SourcePort, DeviceAction, bin(TimeGenerated, 1h)\n| take 20",
+                  "db": "adxdata001"
+                },
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['kusto']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/ListKustoResults/false"
               }
             },
-            "actions": {
-              "Entities_-_Get_IPs": {
-                "runAfter": {},
-                "type": "ApiConnection",
-                "inputs": {
-                  "body": "@triggerBody()?['object']?['properties']?['relatedEntities']",
-                  "host": {
-                    "connection": {
-                      "name": "@parameters('$connections')['azuresentinel']['connectionId']"
-                    }
-                  },
-                  "method": "post",
-                  "path": "/entities/ip"
+            "Entities_-_Get_IPs": {
+              "runAfter": {
+                "Initialize_IP_Array": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "body": "@triggerBody()?['object']?['properties']?['relatedEntities']",
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/entities/ip"
+              }
+            },
+            "Fill_IP_Array": {
+              "foreach": "@body('Entities_-_Get_IPs')?['IPs']",
+              "actions": {
+                "Append_to_array_variable": {
+                  "runAfter": {},
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "IPList",
+                    "value": "@items('Fill_IP_Array')?['Address']"
+                  }
                 }
               },
-              "For_each": {
-                "foreach": "@body('Entities_-_Get_IPs')?['IPs']",
-                "actions": {
-                  "Create_HTML_table": {
-                    "runAfter": {
-                        "Run_KQL_query": [
-                        "Succeeded"
-                    ]},
-                    "type": "Table",
-                    "inputs": {
-                      "format": "HTML",
-                      "from": "@body('Run_KQL_query')?['value']"
-                    }
+              "runAfter": {
+                "Entities_-_Get_IPs": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach"
+            },
+            "Initialize_IP_Array": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "IPList",
+                    "type": "array"
+                  }
+                ]
+              }
+            },
+            "Remove_Brackets": {
+              "runAfter": {
+                "Convert_Array_to_String": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose",
+              "inputs": "@replace(replace(outputs('Convert_Array_to_String'),']',''),'[','')"
+            },
+            "TI_Destination_-_Add_Comment": {
+              "actions": {
+                "TI_Destination_Comment": {
+                  "runAfter": {
+                    "TI_Destination_Table": [
+                      "Succeeded"
+                    ]
                   },
-                  "Network_IOC_Communications": {
-                    "runAfter": {
-                        "Create_HTML_table": [
-                            "Succeeded"
-                        ]
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": {
+                      "incidentArmId": "@triggerBody()?['object']?['id']",
+                      "message": "<p><strong>Connections from TI:<br>\n</strong><br>\n@{body('TI_Destination_Table')}<br>\n</p>"
                     },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/Incidents/Comment"
+                  }
+                },
+                "TI_Destination_Table": {
+                  "runAfter": {},
+                  "type": "Table",
+                  "inputs": {
+                    "format": "HTML",
+                    "from": "@body('Enrichment_Query_-_TI_Destination')?['value']"
+                  }
+                }
+              },
+              "runAfter": {
+                "Enrichment_Query_-_TI_Destination": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "No_TI_Destination_Connections_Found": {
+                    "runAfter": {},
                     "type": "ApiConnection",
                     "inputs": {
                       "body": {
                         "incidentArmId": "@triggerBody()?['object']?['id']",
-                        "message": "<p>Related Events in Past 3 hours:<br>\n@{body('Create_HTML_table')}<br>\n</p>"
+                        "message": "<p>Logic app found no connections to TI in the past 3 hours ingestion.&nbsp;</p>"
                       },
                       "host": {
                         "connection": {
@@ -142,68 +349,126 @@
                       "method": "post",
                       "path": "/Incidents/Comment"
                     }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(body('Enrichment_Query_-_TI_Destination')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "TI_Source_-_Add_Comment": {
+              "actions": {
+                "TI_Source_Comment": {
+                  "runAfter": {
+                    "TI_Source_Table": [
+                      "Succeeded"
+                    ]
                   },
-                  "Run_KQL_query": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": {
+                      "incidentArmId": "@triggerBody()?['object']?['id']",
+                      "message": "<p><strong>Connections from TI:<br>\n</strong><br>\n@{body('TI_Source_Table')}<br>\n</p>"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/Incidents/Comment"
+                  }
+                },
+                "TI_Source_Table": {
+                  "runAfter": {},
+                  "type": "Table",
+                  "inputs": {
+                    "format": "HTML",
+                    "from": "@body('Enrichment_Query_-_TI_Source')?['value']"
+                  }
+                }
+              },
+              "runAfter": {
+                "Enrichment_Query_-_TI_Destination": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "No_TI_Source_Connections_Found": {
                     "runAfter": {},
                     "type": "ApiConnection",
                     "inputs": {
                       "body": {
-                        "cluster": "[parameters('ADXClusterURI')]",
-                        "csl": "union isfuzzy=true external_table('paloaltotraffic'), external_table('checkpoint')\n| where rt >= ago(6h) and rt < now()\n| search \"@{items('For_each')?['Address']}\"\n| summarize sum(total_in), sum(total_out), events= count() by src, dst, DestinationPort, SourcePort, ApplicationProtocol, SimplifiedDeviceAction",
-                        "db": "[parameters('ADXDataBaseName')]"
+                        "incidentArmId": "@triggerBody()?['object']?['id']",
+                        "message": "<p>Logic app found no connections from TI in the past 3 hours ingestion.&nbsp;</p>"
                       },
                       "host": {
                         "connection": {
-                          "name": "@parameters('$connections')['kusto']['connectionId']"
+                          "name": "@parameters('$connections')['azuresentinel']['connectionId']"
                         }
                       },
                       "method": "post",
-                      "path": "/ListKustoResults/false"
+                      "path": "/Incidents/Comment"
                     }
                   }
-                },
-                "runAfter": {
-                  "Entities_-_Get_IPs": [
-                    "Succeeded"
-                  ]
-                },
-                "type": "Foreach"
-              }
-            },
-            "outputs": {}
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(body('Enrichment_Query_-_TI_Source')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
           },
-          "parameters": {
-            "$connections": {
-              "value": {
-                "azuresentinel": {
-                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/azuresentinel')]",
-                  "connectionId": "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
-                  "connectionName": "[variables('AzureSentinelConnectionName')]",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "azuresentinel": {
+                "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/azuresentinel')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
+                "connectionName": "[variables('AzureSentinelConnectionName')]",
+                "connectionProperties": {
+                  "authentication": {
+                    "type": "ManagedServiceIdentity"
+                  }
+                }
+              },
+              "kusto": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/kusto')]",
+                    "connectionId": "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]",
+                  "connectionName": "[variables('ADXConnectionName')]",
                   "connectionProperties": {
                     "authentication": {
                       "type": "ManagedServiceIdentity"
                     }
                   }
-                },
-                "kusto": {
-                    "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/kusto')]",
-                      "connectionId": "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]",
-                    "connectionName": "[variables('ADXConnectionName')]",
-                    "connectionProperties": {
-                      "authentication": {
-                        "type": "ManagedServiceIdentity"
-                      }
-                    }
-                  }
-              }
+                }
             }
-          }
-        },
-        "identity": {
-          "type": "SystemAssigned"
-        }
+          }         
+        } 
+      },
+      "identity": {
+        "type": "SystemAssigned"
       }
-      
-    ],
-    "outputs": {}
-  }
+    },
+
+  ],
+  "outputs": {}
+}

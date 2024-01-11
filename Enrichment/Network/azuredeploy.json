@@ -154,7 +154,7 @@
       "location": "[parameters('logicAppLocation')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/connections', variables('AzureSentinelConnectionName'))]",
-        "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]",
+        "[resourceId('Microsoft.Web/connections', variables('ADXConnectionName'))]"
       ],
       "properties": {
         "definition": {
@@ -467,8 +467,7 @@
       "identity": {
         "type": "SystemAssigned"
       }
-    },
-
+    }
   ],
   "outputs": {}
 }
